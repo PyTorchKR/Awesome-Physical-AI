@@ -358,7 +358,17 @@ def verify_link(url: str) -> LinkCheck:
 def decide_recommendation(candidate: Candidate) -> tuple[str, list[str]]:
     reasons: list[str] = []
     available_links = [c for c in candidate.checks if c.status == "available" and c.kind != "paper"]
-    bad_links = [c for c in candidate.checks if c.status in {"placeholder", "not_found", "unofficial", "private_or_gated"}]
+    bad_links = [
+        c for c in candidate.checks
+        if c.status in {
+            "placeholder",
+            "not_found",
+            "unofficial",
+            "private_or_gated",
+            "archived",
+            "not_available",
+        }
+    ]
 
     if candidate.duplicate_matches:
         reasons.append("possible duplicate with existing data")
