@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Discover recent Physical AI candidates from paper-first sources.
 
@@ -6,6 +5,16 @@ This script intentionally does not create GitHub issues. It collects recent
 arXiv cs.RO papers, extracts official-looking links from paper metadata,
 verifies those links, checks for duplicates against data/*.yaml, and emits a
 maintainer review report.
+
+Hybrid review strategy:
+1. Keep deterministic keyword/rule-based filtering as the default layer.
+2. Cap borderline candidates with --max-ambiguous for human or optional LLM review.
+3. Report LLM review and public-facing entry summaries side-by-side with rule-based
+   results instead of silently replacing deterministic decisions.
+4. Ask the LLM for both a public-facing entry_summary and a maintainer_summary
+   for candidates that will be reviewed in weekly GitHub issues.
+5. Track verified model/code/dataset/artifact links separately so that paper-only
+   or project-page-only candidates are not confused with official model releases.
 """
 
 from __future__ import annotations
@@ -41,7 +50,8 @@ if GITHUB_TOKEN:
 
 URL_RE = re.compile(r"https?://[^\s<>)\]\}]+")
 GITHUB_RE = re.compile(r"https?://github\.com/([^/\s]+/[^/\s#?]+)")
-HF_RE = re.compile(r"https?://huggingface\.co/(datasets/)?([^/\s]+/[^/\s#?]+)")
+HF_MODEL_RE = re.compile(r"https?://huggingface\.co/([^/\s]+/[^/\s#?]+)")
+HF_DATASET_RE = re.compile(r"https?://huggingface\.co/datasets/([^/\s]+/[^/\s#?]+)")
 
 PHYSICAL_AI_KEYWORDS = {
     "robot", "robotic", "robotics", "embodied", "embodiment", "manipulation",
@@ -49,6 +59,10 @@ PHYSICAL_AI_KEYWORDS = {
     "teleoperation", "imitation learning", "vision language action", "vla",
     "policy learning", "sim to real", "reinforcement learning", "grasp",
     "world model", "diffusion policy", "mobile manipulation", "robot learning",
+    "navigation", "vision language navigation", "vln", "embodied navigation",
+    "mobile robot", "motion planning", "path planning", "task planning",
+    "action prediction", "action generation", "control policy", "robot policy",
+    "simulator", "simulation", "real world interaction", "physical interaction",
 }
 EXCLUSION_KEYWORDS = {
     "autonomous driving", "self driving", "traffic", "lane detection",
@@ -62,6 +76,11 @@ UNOFFICIAL_PATTERNS = {
     "unofficial", "reimplementation", "re implementation", "replica",
     "fine tuned", "finetuned", "converted", "community",
 }
+BAD_LINK_STATUSES = {
+    "placeholder", "not_found", "unofficial", "private_or_gated",
+    "archived", "not_available",
+}
+AMBIGUOUS_LINK_STATUSES = {"unknown", "private_or_rate_limited"}
 
 
 @dataclass
@@ -86,8 +105,13 @@ class Candidate:
     checks: list[LinkCheck] = field(default_factory=list)
     duplicate_matches: list[str] = field(default_factory=list)
     llm_review: dict[str, Any] = field(default_factory=dict)
+    llm_review_selected: bool = False
     relevance: str = "unknown"
     recommendation: str = "needs_review"
+    review_bucket: str = "normal"  # normal | ambiguous | reject
+    keyword_hits: list[str] = field(default_factory=list)
+    exclusion_hits: list[str] = field(default_factory=list)
+    artifact_availability: dict[str, Any] = field(default_factory=dict)
     reasons: list[str] = field(default_factory=list)
 
 
@@ -114,6 +138,10 @@ def classify_url(url: str) -> str:
         return "github"
     if "huggingface.co/datasets/" in url:
         return "hf_dataset"
+    if "huggingface.co/spaces/" in url:
+        return "hf_space"
+    if "huggingface.co/papers/" in url:
+        return "paper"
     if "huggingface.co/" in url:
         return "hf_model"
     if "arxiv.org/" in url:
@@ -157,25 +185,25 @@ def find_duplicate_matches(candidate: Candidate, existing_entries: list[dict]) -
     return matches
 
 
-def assess_relevance(title: str, summary: str) -> tuple[str, list[str]]:
+def assess_relevance(title: str, summary: str) -> tuple[str, list[str], list[str], list[str]]:
     text = normalize_text(f"{title} {summary}")
     reasons: list[str] = []
 
-    exclusion_hits = [kw for kw in EXCLUSION_KEYWORDS if kw in text]
+    exclusion_hits = sorted(kw for kw in EXCLUSION_KEYWORDS if kw in text)
     if exclusion_hits:
-        reasons.append(f"exclusion keywords: {', '.join(sorted(exclusion_hits))}")
-        return "low", reasons
+        reasons.append(f"exclusion keywords: {', '.join(exclusion_hits)}")
+        return "low", reasons, [], exclusion_hits
 
-    hits = [kw for kw in PHYSICAL_AI_KEYWORDS if kw in text]
+    hits = sorted(kw for kw in PHYSICAL_AI_KEYWORDS if kw in text)
     if len(hits) >= 2:
-        reasons.append(f"physical-ai keywords: {', '.join(sorted(hits)[:8])}")
-        return "high", reasons
+        reasons.append(f"physical-ai keywords: {', '.join(hits[:8])}")
+        return "high", reasons, hits, []
     if hits:
         reasons.append(f"physical-ai keyword: {hits[0]}")
-        return "medium", reasons
+        return "medium", reasons, hits, []
 
     reasons.append("no strong Physical AI keyword evidence")
-    return "low", reasons
+    return "low", reasons, [], []
 
 
 def inspect_github_readme(slug: str) -> tuple[str, str, list[str]]:
@@ -271,14 +299,19 @@ def verify_github_url(url: str) -> LinkCheck:
 
 
 def verify_hf_url(url: str) -> LinkCheck:
-    match = HF_RE.match(url)
+    if "huggingface.co/datasets/" in url:
+        match = HF_DATASET_RE.match(url)
+        kind = "dataset"
+        api_kind = "datasets"
+    else:
+        match = HF_MODEL_RE.match(url)
+        kind = "model"
+        api_kind = "models"
+
     if not match:
         return LinkCheck(url=url, kind="huggingface", status="invalid", reason="not a HuggingFace model/dataset URL")
 
-    kind = "dataset" if match.group(1) else "model"
-    slug = match.group(2)
-    api_kind = "datasets" if kind == "dataset" else "models"
-
+    slug = match.group(1)
     try:
         resp = requests.get(f"https://huggingface.co/api/{api_kind}/{slug}", timeout=15)
         if resp.status_code == 404:
@@ -355,60 +388,145 @@ def verify_link(url: str) -> LinkCheck:
     return verify_generic_url(url)
 
 
-def decide_recommendation(candidate: Candidate) -> tuple[str, list[str]]:
+
+def available_checks(candidate: Candidate, kinds: set[str] | None = None) -> list[LinkCheck]:
+    checks = [c for c in candidate.checks if c.status == "available"]
+    if kinds is not None:
+        checks = [c for c in checks if c.kind in kinds]
+    return checks
+
+
+def build_artifact_availability(candidate: Candidate) -> dict[str, Any]:
+    """Summarize verified artifact availability for rule and LLM review.
+
+    A generic project page is tracked separately from concrete artifacts. This
+    prevents a project page from being treated as an official model release.
+    """
+    verified_model_links = available_checks(candidate, {"hf_model"})
+    verified_dataset_links = available_checks(candidate, {"hf_dataset"})
+    verified_code_links = available_checks(candidate, {"github"})
+    verified_space_links = available_checks(candidate, {"hf_space"})
+    verified_project_pages = available_checks(candidate, {"project"})
+
+    verified_artifact_links = (
+        verified_model_links
+        + verified_dataset_links
+        + verified_code_links
+        + verified_space_links
+    )
+
+    return {
+        "has_verified_model_link": bool(verified_model_links),
+        "has_verified_dataset_link": bool(verified_dataset_links),
+        "has_verified_code_link": bool(verified_code_links),
+        "has_verified_space_link": bool(verified_space_links),
+        "has_verified_artifact_link": bool(verified_artifact_links),
+        "has_verified_project_page": bool(verified_project_pages),
+        "verified_model_links": [c.url for c in verified_model_links],
+        "verified_dataset_links": [c.url for c in verified_dataset_links],
+        "verified_code_links": [c.url for c in verified_code_links],
+        "verified_space_links": [c.url for c in verified_space_links],
+        "verified_project_pages": [c.url for c in verified_project_pages],
+    }
+
+def decide_recommendation(candidate: Candidate) -> tuple[str, list[str], str]:
     reasons: list[str] = []
+    availability = candidate.artifact_availability or build_artifact_availability(candidate)
     available_links = [c for c in candidate.checks if c.status == "available" and c.kind != "paper"]
-    bad_links = [
-        c for c in candidate.checks
-        if c.status in {
-            "placeholder",
-            "not_found",
-            "unofficial",
-            "private_or_gated",
-            "archived",
-            "not_available",
-        }
-    ]
+    bad_links = [c for c in candidate.checks if c.status in BAD_LINK_STATUSES]
+
+    has_verified_model = availability.get("has_verified_model_link", False)
+    has_verified_artifact = availability.get("has_verified_artifact_link", False)
+    has_verified_project_page = availability.get("has_verified_project_page", False)
 
     if candidate.duplicate_matches:
         reasons.append("possible duplicate with existing data")
-        return "reject", reasons
-    if candidate.relevance == "low":
-        reasons.append("low Physical AI relevance")
-        return "reject", reasons
+        return "reject", reasons, "reject"
+
+    if candidate.exclusion_hits:
+        reasons.append("excluded by domain-specific exclusion keywords")
+        return "reject", reasons, "reject"
+
     if bad_links and not available_links:
-        reasons.append("only non-available or unofficial public links found")
-        return "needs_review", reasons
+        reasons.append("only unavailable, archived, placeholder, gated, or unofficial public links found")
+        return "needs_review", reasons, "ambiguous"
+
     if not available_links:
-        reasons.append("paper found, but no verified public code/model/dataset link")
-        return "needs_review", reasons
-    if candidate.relevance == "high" and available_links:
-        reasons.append("verified public link and high Physical AI relevance")
-        return "needs_review", reasons
+        reasons.append("paper found, but no verified public code/model/dataset/project link")
+        return "needs_review", reasons, "ambiguous"
+
+    if not has_verified_artifact:
+        if has_verified_project_page:
+            reasons.append("verified project page found, but no verified concrete artifact link")
+        else:
+            reasons.append("no verified model/code/dataset/space artifact link")
+        return "needs_review", reasons, "ambiguous"
+
+    if not has_verified_model:
+        reasons.append("verified artifact link found, but no verified model link")
+        return "needs_review", reasons, "ambiguous"
+
+    if candidate.relevance == "low":
+        reasons.append("low keyword-based Physical AI relevance despite verified model link; kept for maintainer review")
+        return "needs_review", reasons, "ambiguous"
+
+    if candidate.relevance == "medium":
+        reasons.append("verified model link with medium keyword-based Physical AI relevance; selected for possible human/LLM review")
+        return "needs_review", reasons, "ambiguous"
+
+    if any(c.status in AMBIGUOUS_LINK_STATUSES for c in candidate.checks):
+        reasons.append("some link checks are inconclusive")
+        return "needs_review", reasons, "ambiguous"
+
+    if candidate.relevance == "high" and has_verified_model:
+        reasons.append("verified model link and high Physical AI relevance")
+        return "needs_review", reasons, "normal"
 
     reasons.append("requires maintainer review")
-    return "needs_review", reasons
-
+    return "needs_review", reasons, "normal"
 
 def candidate_review_payload(candidate: Candidate) -> dict[str, Any]:
     return {
         "title": candidate.title,
-        "summary": candidate.summary,
+        "abstract": candidate.summary,
         "authors": candidate.authors,
         "paper_url": candidate.url,
         "links": candidate.links,
         "duplicate_matches": candidate.duplicate_matches,
+        "artifact_availability": candidate.artifact_availability,
+        "keyword_based_review": {
+            "relevance": candidate.relevance,
+            "keyword_hits": candidate.keyword_hits,
+            "exclusion_hits": candidate.exclusion_hits,
+            "recommendation": candidate.recommendation,
+            "review_bucket": candidate.review_bucket,
+            "reasons": candidate.reasons,
+        },
         "link_checks": [asdict(check) for check in candidate.checks],
-        "question": (
-            "Decide whether this is an official, open Physical AI / robotics "
-            "model, dataset, or simulator candidate. Exclude autonomous-driving-only, "
-            "unofficial reimplementations, fine-tunes, and paper-only entries."
+        "review_policy": {
+            "llm_direct_review": True,
+            "needs_human_maintainer_summary": True,
+            "intended_use": "weekly_github_issue_for_human_maintainer_review",
+        },
+        "task": (
+            "Review this candidate for Awesome-Physical-AI. Decide whether it is an official, open "
+            "Physical AI / robotics / embodied AI model, dataset, benchmark, simulator, or tool. "
+            "Exclude autonomous-driving-only entries, unofficial reimplementations, fine-tunes, "
+            "closed/private artifacts, and paper-only entries unless they clearly provide a useful "
+            "official artifact. Treat a verified official model link as the strongest positive signal. "
+            "Do not treat a generic project page as a verified model release unless the input explicitly "
+            "contains a verified model/code/dataset/simulator/tool artifact link. Also generate a "
+            "public-facing entry summary suitable for an Awesome-list item."
         ),
         "expected_json": {
             "is_physical_ai": "boolean",
             "is_official": "boolean",
-            "entry_type": "model|dataset|tool|paper_only|irrelevant|unclear",
+            "has_verified_model_link": "boolean",
+            "has_verified_artifact_link": "boolean",
+            "entry_type": "model|dataset|tool|benchmark|simulator|paper_only|irrelevant|unclear",
             "decision": "accept|needs_review|reject",
+            "entry_summary": "2-3 sentence public-facing Awesome-list description",
+            "maintainer_summary": "2-3 sentence human maintainer review note for weekly GitHub issue triage",
             "reason": "short explanation",
         },
     }
@@ -451,6 +569,7 @@ def run_llm_review_command(candidate: Candidate, command: str) -> dict[str, Any]
 
     if not isinstance(review, dict):
         return {"status": "error", "reason": "LLM command returned non-object JSON"}
+
     review.setdefault("status", "ok")
     return review
 
@@ -501,7 +620,7 @@ def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
             title=title,
             url=url,
             published=published_dt.date().isoformat(),
-            summary=summary[:800],
+            summary=summary[:1200],
             authors=[a for a in authors if a],
             links=links,
         ))
@@ -509,20 +628,41 @@ def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
     return candidates
 
 
+def llm_review_targets(
+    candidates: list[Candidate],
+    llm_review_mode: str,
+    max_ambiguous: int,
+) -> list[Candidate]:
+    if llm_review_mode == "off":
+        return []
+    if llm_review_mode == "all":
+        return [c for c in candidates if c.review_bucket != "reject"]
+
+    ambiguous = [c for c in candidates if c.review_bucket == "ambiguous"]
+    return ambiguous[:max_ambiguous]
+
+
 def evaluate_candidates(
     candidates: list[Candidate],
     verify_links: bool = True,
     llm_review_command: str | None = None,
+    llm_review_mode: str = "ambiguous",
+    max_ambiguous: int = 10,
 ) -> list[Candidate]:
     existing_entries = load_yaml_entries()
     for candidate in candidates:
-        candidate.relevance, relevance_reasons = assess_relevance(candidate.title, candidate.summary)
+        (
+            candidate.relevance,
+            relevance_reasons,
+            candidate.keyword_hits,
+            candidate.exclusion_hits,
+        ) = assess_relevance(candidate.title, candidate.summary)
         candidate.reasons.extend(relevance_reasons)
         candidate.duplicate_matches = find_duplicate_matches(candidate, existing_entries)
 
         official_candidate_links = [
             url for url in candidate.links
-            if classify_url(url) in {"github", "hf_model", "hf_dataset", "project"}
+            if classify_url(url) in {"github", "hf_model", "hf_dataset", "hf_space", "project"}
         ]
         if verify_links:
             candidate.checks = [verify_link(url) for url in official_candidate_links]
@@ -532,11 +672,17 @@ def evaluate_candidates(
                 for url in official_candidate_links
             ]
 
-        recommendation, decision_reasons = decide_recommendation(candidate)
+        candidate.artifact_availability = build_artifact_availability(candidate)
+        recommendation, decision_reasons, review_bucket = decide_recommendation(candidate)
         candidate.recommendation = recommendation
+        candidate.review_bucket = review_bucket
         candidate.reasons.extend(decision_reasons)
 
-        if llm_review_command:
+    targets = llm_review_targets(candidates, llm_review_mode, max_ambiguous)
+    target_ids = {id(c) for c in targets}
+    for candidate in candidates:
+        candidate.llm_review_selected = id(candidate) in target_ids
+        if llm_review_command and candidate.llm_review_selected:
             candidate.llm_review = run_llm_review_command(candidate, llm_review_command)
 
     return candidates
@@ -544,6 +690,24 @@ def evaluate_candidates(
 
 def candidate_to_dict(candidate: Candidate) -> dict[str, Any]:
     return asdict(candidate)
+
+
+def llm_entry_summary(candidate: Candidate) -> str | None:
+    if candidate.llm_review.get("status") != "ok":
+        return None
+    summary = candidate.llm_review.get("entry_summary") or candidate.llm_review.get("summary")
+    if isinstance(summary, str) and summary.strip():
+        return summary.strip()
+    return None
+
+
+def llm_maintainer_summary(candidate: Candidate) -> str | None:
+    if candidate.llm_review.get("status") != "ok":
+        return None
+    summary = candidate.llm_review.get("maintainer_summary")
+    if isinstance(summary, str) and summary.strip():
+        return summary.strip()
+    return None
 
 
 def render_markdown(candidates: list[Candidate]) -> str:
@@ -559,6 +723,25 @@ def render_markdown(candidates: list[Candidate]) -> str:
         count = sum(1 for c in candidates if c.recommendation == recommendation)
         lines.append(f"| `{recommendation}` | {count} |")
 
+    lines.extend([
+        "",
+        "| Review bucket | Count |",
+        "|---|---:|",
+    ])
+    for review_bucket in ("normal", "ambiguous", "reject"):
+        count = sum(1 for c in candidates if c.review_bucket == review_bucket)
+        lines.append(f"| `{review_bucket}` | {count} |")
+
+    llm_selected_count = sum(1 for c in candidates if c.llm_review_selected)
+    llm_completed_count = sum(1 for c in candidates if c.llm_review.get("status") == "ok")
+    lines.extend([
+        "",
+        "| LLM review | Count |",
+        "|---|---:|",
+        f"| `selected` | {llm_selected_count} |",
+        f"| `completed` | {llm_completed_count} |",
+    ])
+
     lines.extend(["", "## Candidates", ""])
     for i, candidate in enumerate(candidates, start=1):
         lines.extend([
@@ -569,17 +752,36 @@ def render_markdown(candidates: list[Candidate]) -> str:
             f"- Paper: {candidate.url}",
             f"- Relevance: `{candidate.relevance}`",
             f"- Recommendation: `{candidate.recommendation}`",
+            f"- Review bucket: `{candidate.review_bucket}`",
+            f"- LLM review selected: `{candidate.llm_review_selected}`",
         ])
         if candidate.authors:
             lines.append(f"- Authors: {', '.join(candidate.authors[:8])}")
+        if candidate.keyword_hits:
+            lines.append(f"- Keyword hits: {', '.join(candidate.keyword_hits[:12])}")
+        if candidate.exclusion_hits:
+            lines.append(f"- Exclusion hits: {', '.join(candidate.exclusion_hits)}")
         if candidate.duplicate_matches:
             lines.append(f"- Duplicate matches: {', '.join(candidate.duplicate_matches)}")
         if candidate.reasons:
-            lines.append(f"- Reasons: {'; '.join(candidate.reasons)}")
+            lines.append(f"- Rule-based reasons: {'; '.join(candidate.reasons)}")
+        if candidate.artifact_availability:
+            availability = candidate.artifact_availability
+            lines.extend([
+                f"- Has verified model link: `{availability.get('has_verified_model_link', False)}`",
+                f"- Has verified artifact link: `{availability.get('has_verified_artifact_link', False)}`",
+                f"- Has verified project page: `{availability.get('has_verified_project_page', False)}`",
+            ])
         if candidate.llm_review:
-            lines.append(f"- LLM review: `{candidate.llm_review.get('status', 'unknown')}`")
+            lines.append(f"- LLM review status: `{candidate.llm_review.get('status', 'unknown')}`")
             if candidate.llm_review.get("decision"):
                 lines.append(f"- LLM decision: `{candidate.llm_review.get('decision')}`")
+            if "has_verified_model_link" in candidate.llm_review:
+                lines.append(f"- LLM has verified model link: `{candidate.llm_review.get('has_verified_model_link')}`")
+            if "has_verified_artifact_link" in candidate.llm_review:
+                lines.append(f"- LLM has verified artifact link: `{candidate.llm_review.get('has_verified_artifact_link')}`")
+            if candidate.llm_review.get("entry_type"):
+                lines.append(f"- LLM entry type: `{candidate.llm_review.get('entry_type')}`")
             if candidate.llm_review.get("reason"):
                 lines.append(f"- LLM reason: {candidate.llm_review.get('reason')}")
 
@@ -591,7 +793,15 @@ def render_markdown(candidates: list[Candidate]) -> str:
         else:
             lines.append("- No official code/model/dataset/project links found in arXiv metadata.")
 
-        lines.extend(["", "**Summary**", "", candidate.summary, ""])
+        generated_summary = llm_entry_summary(candidate)
+        if generated_summary:
+            lines.extend(["", "**LLM entry summary**", "", generated_summary, ""])
+
+        maintainer_summary = llm_maintainer_summary(candidate)
+        if maintainer_summary:
+            lines.extend(["", "**LLM maintainer summary**", "", maintainer_summary, ""])
+
+        lines.extend(["", "**Original abstract excerpt**", "", candidate.summary, ""])
 
     return "\n".join(lines).rstrip() + "\n"
 
@@ -618,8 +828,27 @@ def main() -> int:
     parser.add_argument("--output", help="Write report to this file instead of stdout.")
     parser.add_argument("--no-verify", action="store_true", help="Skip network checks for extracted official links.")
     parser.add_argument(
+        "--max-ambiguous",
+        type=int,
+        default=10,
+        help="Maximum ambiguous candidates to select for human/LLM review.",
+    )
+    parser.add_argument(
+        "--llm-review-mode",
+        choices=("off", "ambiguous", "all"),
+        default="ambiguous",
+        help=(
+            "Choose which candidates are sent to --llm-review-command. "
+            "'ambiguous' limits LLM review to --max-ambiguous borderline candidates."
+        ),
+    )
+    parser.add_argument(
         "--llm-review-command",
-        help="Optional command that receives candidate JSON on stdin and returns one review JSON object.",
+        help=(
+            "Optional command that receives candidate JSON on stdin and returns one JSON object. "
+            "The returned JSON may include is_physical_ai, is_official, has_verified_model_link, "
+            "has_verified_artifact_link, entry_type, decision, entry_summary, maintainer_summary, and reason."
+        ),
     )
     args = parser.parse_args()
 
@@ -629,6 +858,8 @@ def main() -> int:
             candidates,
             verify_links=not args.no_verify,
             llm_review_command=args.llm_review_command,
+            llm_review_mode=args.llm_review_mode,
+            max_ambiguous=args.max_ambiguous,
         )
     except requests.RequestException as exc:
         print(f"error: discovery request failed: {exc}", file=sys.stderr)
