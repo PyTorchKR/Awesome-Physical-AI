@@ -18,8 +18,8 @@
   - python
   - c++
   stats:
-    github_stars: 13327
-    last_updated: '2026-05-03'
+    github_stars: 13774
+    last_updated: '2026-06-07'
   added_date: '2022-10-18'
   tags:
   - physics-engine
@@ -45,8 +45,8 @@
   language:
   - python
   stats:
-    github_stars: 7080
-    last_updated: '2026-05-03'
+    github_stars: 7370
+    last_updated: '2026-06-07'
   added_date: '2023-05-01'
   tags:
   - simulation
@@ -72,8 +72,8 @@
   language:
   - python
   stats:
-    github_stars: 28605
-    last_updated: '2026-05-03'
+    github_stars: 29259
+    last_updated: '2026-06-07'
   added_date: '2024-12-01'
   tags:
   - simulation
@@ -98,8 +98,8 @@
   language:
   - python
   stats:
-    github_stars: 1053
-    last_updated: '2026-05-03'
+    github_stars: 1084
+    last_updated: '2026-06-07'
   added_date: '2024-05-09'
   tags:
   - benchmark
@@ -125,8 +125,8 @@
   language:
   - python
   stats:
-    github_stars: 2392
-    last_updated: '2026-05-03'
+    github_stars: 2452
+    last_updated: '2026-06-07'
   added_date: '2020-09-25'
   tags:
   - benchmark
@@ -151,8 +151,8 @@
   language:
   - python
   stats:
-    github_stars: 1369
-    last_updated: '2026-05-03'
+    github_stars: 1446
+    last_updated: '2026-06-07'
   added_date: '2024-06-04'
   tags:
   - household
@@ -177,8 +177,8 @@
   language:
   - python
   stats:
-    github_stars: 3145
-    last_updated: '2026-05-03'
+    github_stars: 3181
+    last_updated: '2026-06-07'
   added_date: '2021-06-25'
   tags:
   - JAX
@@ -204,8 +204,8 @@
   language:
   - python
   stats:
-    github_stars: 4564
-    last_updated: '2026-05-03'
+    github_stars: 4610
+    last_updated: '2026-06-07'
   added_date: '2018-01-01'
   tags:
   - MuJoCo
@@ -231,8 +231,8 @@
   - python
   - c++
   stats:
-    github_stars: 761
-    last_updated: '2026-05-03'
+    github_stars: 774
+    last_updated: '2026-06-07'
   added_date: '2020-03-18'
   tags:
   - articulated-objects
