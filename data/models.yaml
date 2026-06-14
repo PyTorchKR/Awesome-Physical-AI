@@ -386,3 +386,11 @@
   - cross-embodiment
   - generalist
   - transformer
+- id: test-entry-pi0
+  name: pi0
+  description_en: A robot policy for whole-body humanoid control.
+  description_ko: 휴머노이드 전신 제어를 위한 로봇 정책입니다.
+  tags: [manipulation, pytorch]
+  github_url: https://github.com/Physical-Intelligence/openpi
+  paper_url: https://arxiv.org/abs/2410.24164
+
