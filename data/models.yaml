@@ -21,10 +21,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 23709
-    github_forks: 4419
+    github_stars: 24952
+    github_forks: 4804
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2024-06-01'
   tags:
   - imitation-learning
@@ -55,10 +55,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 11638
-    github_forks: 1853
+    github_stars: 12331
+    github_forks: 2066
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2024-10-31'
   tags:
   - foundation-model
@@ -87,10 +87,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 6051
-    github_forks: 719
-    hf_downloads: 2085608
-    last_updated: '2026-05-03'
+    github_stars: 6421
+    github_forks: 756
+    hf_downloads: 1198411
+    last_updated: '2026-06-14'
   added_date: '2024-06-13'
   tags:
   - VLA
@@ -119,10 +119,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 1642
-    github_forks: 271
-    hf_downloads: 74
-    last_updated: '2026-05-03'
+    github_stars: 1669
+    github_forks: 268
+    hf_downloads: 48
+    last_updated: '2026-06-14'
   added_date: '2023-10-01'
   tags:
   - generalist
@@ -151,10 +151,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 1917
-    github_forks: 380
+    github_stars: 2001
+    github_forks: 388
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2023-04-01'
   tags:
   - ALOHA
@@ -183,10 +183,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 4091
-    github_forks: 759
+    github_stars: 4270
+    github_forks: 782
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2023-03-07'
   tags:
   - diffusion
@@ -217,10 +217,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 4414
-    github_forks: 733
+    github_stars: 4439
+    github_forks: 730
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2024-01-04'
   tags:
   - mobile-manipulation
@@ -249,10 +249,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 840
+    github_stars: 849
     github_forks: 122
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2024-06-14'
   tags:
   - humanoid
@@ -282,10 +282,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 6912
-    github_forks: 1169
-    hf_downloads: 297
-    last_updated: '2026-05-03'
+    github_stars: 7335
+    github_forks: 1255
+    hf_downloads: 144
+    last_updated: '2026-06-14'
   added_date: '2025-03-19'
   tags:
   - humanoid
@@ -313,10 +313,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 429
-    github_forks: 38
+    github_stars: 434
+    github_forks: 37
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2023-11-02'
   tags:
   - VLA
@@ -345,10 +345,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 310
-    github_forks: 16
+    github_stars: 312
+    github_forks: 15
     hf_downloads: 0
-    last_updated: '2026-05-03'
+    last_updated: '2026-06-14'
   added_date: '2024-01-01'
   tags:
   - video-pretraining
@@ -377,12 +377,42 @@
   - jax
   communication: []
   stats:
-    github_stars: 281
-    github_forks: 35
-    hf_downloads: 13
-    last_updated: '2026-05-03'
+    github_stars: 283
+    github_forks: 37
+    hf_downloads: 12
+    last_updated: '2026-06-14'
   added_date: '2024-08-21'
   tags:
   - cross-embodiment
   - generalist
   - transformer
+- id: robovlms
+  name: RoboVLMs
+  org: Multiple
+  year: 2025
+  description_en: A systematically optimized VLA  framework for generalist robots.
+    It easily transfers various foundation VLMs into robust control policies with
+    minimal manual design and supports cross-embodiment data integration.
+  description_ko: 범용 로봇을 위해 체계적으로 최적화된 VLA 프레임워크. 최소한의 설계로 다양한 파운데이션 VLM을 강건한 로봇 제어
+    정책으로 전환하며, 다기종 로봇 데이터 통합을 지원합니다.
+  github_url: https://github.com/Robot-VLAs/RoboVLMs
+  paper_url: https://arxiv.org/abs/2412.14058
+  hf_url: https://huggingface.co/robovlms/RoboVLMs
+  project_url: https://robovlms.github.io/
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  - IL
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 473
+    github_forks: 21
+    hf_downloads: 0
+    last_updated: '2026-06-14'
+  added_date: '2026-05-17'
+  tags: []

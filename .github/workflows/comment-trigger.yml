@@ -1,0 +1,28 @@
+name: Comment Trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  actions: write
+  pull-requests: read
+
+jobs:
+  trigger-test:
+    if: github.event.issue.pull_request != null && github.event.comment.body == '/test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR branch
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH=$(gh pr view ${{ github.event.issue.number }} --repo ${{ github.repository }} --json headRefName --jq '.headRefName')
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Trigger test workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run test.yml --ref "${{ steps.pr.outputs.branch }}" --repo ${{ github.repository }}
