@@ -19,3 +19,4 @@ env/
 
 # Generated (docs/data.js is a build artifact from generate_site.py)
 docs/data.js
+reports/
