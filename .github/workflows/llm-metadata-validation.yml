@@ -38,8 +38,8 @@ jobs:
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           ADDED_IDS="$(git diff --unified=0 "${BASE_SHA}" "${HEAD_SHA}" -- data/models.yaml data/datasets.yaml data/tools.yaml \
-            | rg '^\+\s*id:\s*' -o -r '$0' \
-            | sed -E 's/^\+\s*id:\s*//' \
+            | grep -oE '^\+\s*-?\s*id:\s*.*' \
+            | sed -E 's/^\+\s*-?\s*id:\s*//' \
             | tr -d '"' \
             | tr '\n' ',' \
             | sed 's/,$//')"
