@@ -1,10 +1,10 @@
 {
   "metadata": {
     "last_updated": "2026-06-21",
-    "total_models": 13,
+    "total_models": 14,
     "total_datasets": 10,
     "total_tools": 9,
-    "total_orgs": 28
+    "total_orgs": 29
   },
   "models": [
     {
@@ -514,6 +514,46 @@
       },
       "added_date": "2026-05-17",
       "tags": []
+    },
+    {
+      "id": "cogact",
+      "name": "CogACT",
+      "org": "Tsinghua University / Microsoft Research Asia",
+      "year": 2024,
+      "description_en": "CogACT is a componentized Vision-Language-Action architecture that decouples cognition from action. It utilizes powerful Vision-Language Models  to extract cognitive features, which then condition a specialized Diffusion Transformer-based action module to predict continuous, temporally-correlated robotic action sequences.",
+      "description_ko": "CogACT는 기존의 단일 신경망 모델들과 달리 인지와 행동을 명확히 분리한 컴포넌트형 비전-언어-행동 모델입니다. 강력한 비전-언어 모델을 통해 인지적 특징을 추출하고, 이를 조건으로 특화된 Diffusion Transformer 기반의 행동 모델이 복잡하고 연속적인 로봇의 물리적 제어 궤적을 예측합니다.",
+      "github_url": "https://github.com/microsoft/CogACT",
+      "paper_url": "https://cogact.github.io/CogACT_paper.pdf",
+      "hf_url": "https://huggingface.co/CogACT",
+      "project_url": "https://cogact.github.io/",
+      "categories": [
+        "manipulation"
+      ],
+      "hardware": [
+        "manipulator"
+      ],
+      "learning": [
+        "VLA",
+        "diffusion"
+      ],
+      "framework": [
+        "pytorch"
+      ],
+      "communication": [
+        "other"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "github_forks": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-21"
+      },
+      "added_date": "2026-06-21",
+      "tags": [
+        "VLA",
+        "diffusion",
+        "foundation-model"
+      ]
     }
   ],
   "datasets": [
