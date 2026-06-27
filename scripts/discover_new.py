@@ -26,10 +26,12 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 import xml.etree.ElementTree as ET
 
 import requests
@@ -39,6 +41,7 @@ import yaml
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
+ARXIV_PAGE_SIZE = 100
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_HEADERS = {
@@ -52,6 +55,46 @@ URL_RE = re.compile(r"https?://[^\s<>)\]\}]+")
 GITHUB_RE = re.compile(r"https?://github\.com/([^/\s]+/[^/\s#?]+)")
 HF_MODEL_RE = re.compile(r"https?://huggingface\.co/([^/\s]+/[^/\s#?]+)")
 HF_DATASET_RE = re.compile(r"https?://huggingface\.co/datasets/([^/\s]+/[^/\s#?]+)")
+ARXIV_ID_RE = re.compile(r"^/abs/([^/?#]+)")
+DEFAULT_USER_AGENT = "Awesome-Physical-AI discover_new.py/1.0"
+RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
+HTTP_SESSION = requests.Session()
+
+
+def http_get(
+    url: str,
+    *,
+    params: dict[str, Any] | None = None,
+    headers: dict[str, str] | None = None,
+    timeout: int = 15,
+    allow_redirects: bool = True,
+    retries: int = 2,
+) -> requests.Response:
+    request_headers = {"User-Agent": DEFAULT_USER_AGENT}
+    if headers:
+        request_headers.update(headers)
+
+    last_response: requests.Response | None = None
+    for attempt in range(retries + 1):
+        response = HTTP_SESSION.get(
+            url,
+            params=params,
+            headers=request_headers,
+            timeout=timeout,
+            allow_redirects=allow_redirects,
+        )
+        last_response = response
+        if response.status_code not in RETRY_STATUS_CODES or attempt == retries:
+            return response
+
+        retry_after = response.headers.get("Retry-After")
+        if retry_after and retry_after.isdigit():
+            delay = min(int(retry_after), 30)
+        else:
+            delay = min(2 ** attempt, 8)
+        time.sleep(delay)
+
+    return last_response  # type: ignore[return-value]
 
 PHYSICAL_AI_KEYWORDS = {
     "robot", "robotic", "robotics", "embodied", "embodiment", "manipulation",
@@ -124,27 +167,95 @@ def slugify(value: str) -> str:
     return re.sub(r"-+", "-", value).strip("-")
 
 
+def parsed_hostname(url: str) -> str:
+    try:
+        return urlsplit(url).hostname or ""
+    except ValueError:
+        return ""
+
+
+def _canonical_arxiv_path(path: str) -> str:
+    match = ARXIV_ID_RE.match(path)
+    if not match:
+        return path.rstrip("/")
+    arxiv_id = re.sub(r"v\d+$", "", match.group(1))
+    return f"/abs/{arxiv_id}"
+
+
+def canonicalize_url(url: str) -> str:
+    """Return a stable URL representation for classification and duplicate checks."""
+    url = (url or "").strip().rstrip(".,;:")
+    if not url:
+        return ""
+
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return url
+
+    scheme = (parts.scheme or "https").lower()
+    host = (parts.hostname or "").lower()
+    if not host:
+        return url
+
+    path = re.sub(r"/+", "/", parts.path or "/")
+    query = parts.query
+
+    if host in {"github.com", "www.github.com"}:
+        host = "github.com"
+        segments = [segment for segment in path.split("/") if segment]
+        if len(segments) >= 2:
+            repo = segments[1].removesuffix(".git")
+            path = f"/{segments[0]}/{repo}"
+        else:
+            path = "/" + "/".join(segments)
+        query = ""
+    elif host in {"huggingface.co", "www.huggingface.co"}:
+        host = "huggingface.co"
+        segments = [segment for segment in path.split("/") if segment]
+        if segments[:1] in (["datasets"], ["spaces"]) and len(segments) >= 3:
+            path = f"/{segments[0]}/{segments[1]}/{segments[2]}"
+        elif len(segments) >= 2:
+            path = f"/{segments[0]}/{segments[1]}"
+        else:
+            path = "/" + "/".join(segments)
+        query = ""
+    elif host in {"arxiv.org", "www.arxiv.org", "export.arxiv.org"}:
+        host = "arxiv.org"
+        path = _canonical_arxiv_path(path)
+        query = ""
+    else:
+        path = path.rstrip("/") or "/"
+        query = urlencode(sorted(parse_qsl(query, keep_blank_values=True)))
+
+    return urlunsplit((scheme, host, path, query, ""))
+
+
 def extract_urls(text: str) -> list[str]:
     urls = []
     for match in URL_RE.findall(text or ""):
-        url = match.rstrip(".,;:")
+        url = canonicalize_url(match)
         if url not in urls:
             urls.append(url)
     return urls
 
 
 def classify_url(url: str) -> str:
-    if "github.com/" in url:
+    url = canonicalize_url(url)
+    host = parsed_hostname(url)
+    path = urlsplit(url).path if host else ""
+
+    if host == "github.com":
         return "github"
-    if "huggingface.co/datasets/" in url:
+    if host == "huggingface.co" and path.startswith("/datasets/"):
         return "hf_dataset"
-    if "huggingface.co/spaces/" in url:
+    if host == "huggingface.co" and path.startswith("/spaces/"):
         return "hf_space"
-    if "huggingface.co/papers/" in url:
+    if host == "huggingface.co" and path.startswith("/papers/"):
         return "paper"
-    if "huggingface.co/" in url:
+    if host == "huggingface.co":
         return "hf_model"
-    if "arxiv.org/" in url:
+    if host == "arxiv.org":
         return "paper"
     return "project"
 
@@ -165,7 +276,7 @@ def load_yaml_entries() -> list[dict]:
 def find_duplicate_matches(candidate: Candidate, existing_entries: list[dict]) -> list[str]:
     matches: list[str] = []
     candidate_names = {normalize_text(candidate.title), slugify(candidate.title)}
-    candidate_urls = set(candidate.links + [candidate.url])
+    candidate_urls = {canonicalize_url(url) for url in candidate.links + [candidate.url] if canonicalize_url(url)}
 
     for entry in existing_entries:
         entry_urls = {
@@ -174,7 +285,7 @@ def find_duplicate_matches(candidate: Candidate, existing_entries: list[dict]) -
             entry.get("hf_url", ""),
             entry.get("project_url", ""),
         }
-        if candidate_urls & {u for u in entry_urls if u}:
+        if candidate_urls & {canonicalize_url(u) for u in entry_urls if canonicalize_url(u)}:
             matches.append(f"{entry['_file']}:{entry.get('id')} URL match")
             continue
 
@@ -212,7 +323,7 @@ def assess_relevance(title: str, summary: str) -> tuple[str, list[str]]:
 
 def inspect_github_readme(slug: str) -> tuple[str, str, list[str]]:
     try:
-        resp = requests.get(
+        resp = http_get(
             f"https://api.github.com/repos/{slug}/readme",
             headers=GITHUB_HEADERS,
             timeout=15,
@@ -227,7 +338,7 @@ def inspect_github_readme(slug: str) -> tuple[str, str, list[str]]:
         if not download_url:
             return "unknown", "README download URL missing", []
 
-        raw = requests.get(download_url, timeout=15)
+        raw = http_get(download_url, timeout=15)
         raw.raise_for_status()
         text = normalize_text(raw.text[:20000])
     except requests.RequestException as exc:
@@ -247,13 +358,14 @@ def inspect_github_readme(slug: str) -> tuple[str, str, list[str]]:
 
 
 def verify_github_url(url: str) -> LinkCheck:
+    url = canonicalize_url(url)
     match = GITHUB_RE.match(url)
     if not match:
         return LinkCheck(url=url, kind="github", status="invalid", reason="not a GitHub repository URL")
 
     slug = match.group(1).removesuffix(".git")
     try:
-        resp = requests.get(f"https://api.github.com/repos/{slug}", headers=GITHUB_HEADERS, timeout=15)
+        resp = http_get(f"https://api.github.com/repos/{slug}", headers=GITHUB_HEADERS, timeout=15)
         if resp.status_code == 404:
             return LinkCheck(url=url, kind="github", status="not_found", reason="GitHub repository returned 404")
         if resp.status_code in (401, 403):
@@ -303,7 +415,8 @@ def verify_github_url(url: str) -> LinkCheck:
 
 
 def verify_hf_url(url: str) -> LinkCheck:
-    if "huggingface.co/datasets/" in url:
+    url = canonicalize_url(url)
+    if classify_url(url) == "hf_dataset":
         match = HF_DATASET_RE.match(url)
         kind = "dataset"
         api_kind = "datasets"
@@ -317,7 +430,7 @@ def verify_hf_url(url: str) -> LinkCheck:
 
     slug = match.group(1)
     try:
-        resp = requests.get(f"https://huggingface.co/api/{api_kind}/{slug}", timeout=15)
+        resp = http_get(f"https://huggingface.co/api/{api_kind}/{slug}", timeout=15)
         if resp.status_code == 404:
             return LinkCheck(url=url, kind=f"hf_{kind}", status="not_found", reason="HuggingFace API returned 404")
         if resp.status_code in (401, 403):
@@ -355,8 +468,9 @@ def verify_hf_url(url: str) -> LinkCheck:
 
 
 def verify_generic_url(url: str) -> LinkCheck:
+    url = canonicalize_url(url)
     try:
-        resp = requests.get(url, timeout=15, allow_redirects=True)
+        resp = http_get(url, timeout=15, allow_redirects=True)
         if resp.status_code == 404:
             return LinkCheck(url=url, kind=classify_url(url), status="not_found", reason="HTTP 404")
         if resp.status_code in (401, 403):
@@ -592,54 +706,69 @@ def run_llm_review_command(candidate: Candidate, command: str) -> dict[str, Any]
 
 def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-    params = {
-        "search_query": "cat:cs.RO",
-        "start": 0,
-        "max_results": max_results,
-        "sortBy": "submittedDate",
-        "sortOrder": "descending",
-    }
-
-    response = requests.get(ARXIV_API_URL, params=params, timeout=30)
-    response.raise_for_status()
-
-    root = ET.fromstring(response.text)
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     candidates: list[Candidate] = []
+    start = 0
+    page_size = min(ARXIV_PAGE_SIZE, max_results)
 
-    for entry in root.findall("atom:entry", ns):
-        title = " ".join(entry.findtext("atom:title", default="", namespaces=ns).split())
-        summary = " ".join(entry.findtext("atom:summary", default="", namespaces=ns).split())
-        url = entry.findtext("atom:id", default="", namespaces=ns)
-        published = entry.findtext("atom:published", default="", namespaces=ns)
-        authors = [
-            a.findtext("atom:name", default="", namespaces=ns)
-            for a in entry.findall("atom:author", ns)
-        ]
+    while len(candidates) < max_results:
+        params = {
+            "search_query": "cat:cs.RO",
+            "start": start,
+            "max_results": page_size,
+            "sortBy": "submittedDate",
+            "sortOrder": "descending",
+        }
 
-        published_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
-        if published_dt < cutoff:
-            continue
+        response = http_get(ARXIV_API_URL, params=params, timeout=30)
+        response.raise_for_status()
 
-        links = [url]
-        for link in entry.findall("atom:link", ns):
-            href = link.attrib.get("href", "")
-            if href and href not in links:
-                links.append(href)
-        for extracted in extract_urls(summary):
-            if extracted not in links:
-                links.append(extracted)
+        root = ET.fromstring(response.text)
+        entries = root.findall("atom:entry", ns)
+        if not entries:
+            break
 
-        candidates.append(Candidate(
-            source="arxiv",
-            kind="paper",
-            title=title,
-            url=url,
-            published=published_dt.date().isoformat(),
-            summary=summary[:1200],
-            authors=[a for a in authors if a],
-            links=links,
-        ))
+        reached_cutoff = False
+        for entry in entries:
+            title = " ".join(entry.findtext("atom:title", default="", namespaces=ns).split())
+            summary = " ".join(entry.findtext("atom:summary", default="", namespaces=ns).split())
+            url = canonicalize_url(entry.findtext("atom:id", default="", namespaces=ns))
+            published = entry.findtext("atom:published", default="", namespaces=ns)
+            authors = [
+                a.findtext("atom:name", default="", namespaces=ns)
+                for a in entry.findall("atom:author", ns)
+            ]
+
+            published_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
+            if published_dt < cutoff:
+                reached_cutoff = True
+                continue
+
+            links = [url]
+            for link in entry.findall("atom:link", ns):
+                href = canonicalize_url(link.attrib.get("href", ""))
+                if href and href not in links:
+                    links.append(href)
+            for extracted in extract_urls(summary):
+                if extracted not in links:
+                    links.append(extracted)
+
+            candidates.append(Candidate(
+                source="arxiv",
+                kind="paper",
+                title=title,
+                url=url,
+                published=published_dt.date().isoformat(),
+                summary=summary[:1200],
+                authors=[a for a in authors if a],
+                links=links,
+            ))
+            if len(candidates) >= max_results:
+                break
+
+        if reached_cutoff:
+            break
+        start += page_size
 
     return candidates
 
