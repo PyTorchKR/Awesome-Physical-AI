@@ -5,9 +5,9 @@
 
 [![Models](https://img.shields.io/badge/Models-14-blue)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 [![Datasets](https://img.shields.io/badge/Datasets-10-green)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Simulators](https://img.shields.io/badge/Simulators-9-purple)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Organizations](https://img.shields.io/badge/Organizations-29-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Updated](https://img.shields.io/badge/Updated-2026-06-22-lightgrey)](https://github.com/PyTorchKorea/Awesome-Physical-AI)
+[![Simulators](https://img.shields.io/badge/Simulators-10-purple)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Organizations](https://img.shields.io/badge/Organizations-30-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Updated](https://img.shields.io/badge/Updated-2026-06-29-lightgrey)](https://github.com/PyTorchKorea/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 
 > **[👉 인터랙티브 대시보드에서 필터링 및 시각화 보기 | View Interactive Dashboard](https://pytorchkorea.github.io/Awesome-Physical-AI)**
@@ -81,6 +81,7 @@
 | [RoboCasa](https://github.com/robocasa/robocasa) | UT Austin | 2024 | full_stack | — | — | python | 1,461 | [📄](https://arxiv.org/abs/2406.02523) |
 | [SimplerEnv](https://github.com/simpler-env/SimplerEnv) | UC Berkeley / Google | 2024 | benchmark | — | — | python | 1,087 | [📄](https://arxiv.org/abs/2405.05941) |
 | [SAPIEN](https://github.com/haosulab/SAPIEN) | UC San Diego / others | 2020 | physics_engine | ✅ | — | python, c++ | 780 | [📄](https://arxiv.org/abs/2003.08515) |
+| [MuJoCo Playground](https://github.com/google-deepmind/mujoco_playground) | Google DeepMind / UC Berkeley | 2025 | rl_framework | ✅ | — | Python (JAX, Warp) | 0 | [📄](https://arxiv.org/abs/2502.08844) |
 
 ---
 

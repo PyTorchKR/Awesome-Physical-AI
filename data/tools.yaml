@@ -239,3 +239,39 @@
   - manipulation
   - rendering
   - ManiSkill
+- id: mujoco-playground
+  name: MuJoCo Playground
+  org: Google DeepMind / UC Berkeley
+  year: 2025
+  description_en: MuJoCo Playground is a fully open-source framework for GPU-accelerated
+    robot learning and sim-to-real transfer, built on MuJoCo MJX. With a simple pip
+    install playground, researchers can train policies in minutes on a single GPU.
+    It supports diverse robotic platforms including quadrupeds, humanoids, dexterous
+    hands, and robotic arms, enabling zero-shot sim-to-real transfer from both state
+    and pixel inputs through an integrated stack of physics engine, batch renderer,
+    and training environments.
+  description_ko: MuJoCo Playground는 MuJoCo MJX 기반의 GPU 가속 로봇 학습 및 sim-to-real 전이를
+    위한 완전 오픈소스 프레임워크입니다. pip install playground 한 줄로 설치할 수 있으며, 단일 GPU에서 수 분 내에 정책을
+    학습할 수 있습니다. 사족보행 로봇, 휴머노이드, 로봇 손, 로봇 팔 등 다양한 로봇 플랫폼을 지원하며, 물리 엔진·배치 렌더러·학습 환경의
+    통합 스택을 통해 상태 및 픽셀 입력 모두에서 제로샷 sim-to-real 전이를 가능하게 합니다.
+  github_url: https://github.com/google-deepmind/mujoco_playground
+  paper_url: https://arxiv.org/abs/2502.08844
+  project_url: https://playground.mujoco.org/
+  type: rl_framework
+  gpu_accelerated: true
+  ros_support: false
+  language:
+  - Python (JAX
+  - Warp)
+  stats:
+    github_stars: 0
+    last_updated: '2026-06-29'
+  added_date: '2026-06-29'
+  tags:
+  - MJX
+  - JAX
+  - sim-to-real
+  - locomotion
+  - manipulation
+  - zero-shot-transfer
+  - reinforcement-learning
