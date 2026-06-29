@@ -3,10 +3,10 @@
 > 🤖 Physical AI (Robotics & Embodied AI) 분야의 오픈소스 모델, 데이터셋, 시뮬레이터를 체계적으로 정리한 큐레이션 리스트.
 > A curated list of open-source models, datasets, and simulators for Physical AI (Robotics & Embodied AI).
 
-[![Models](https://img.shields.io/badge/Models-14-blue)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Models](https://img.shields.io/badge/Models-15-blue)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 [![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-9-purple)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Organizations](https://img.shields.io/badge/Organizations-30-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Organizations](https://img.shields.io/badge/Organizations-31-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 [![Updated](https://img.shields.io/badge/Updated-2026-06-29-lightgrey)](https://github.com/PyTorchKorea/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 
@@ -44,6 +44,7 @@
 | [GR-1](https://github.com/bytedance/GR-1) | BAAI / Beijing Academy of AI | 2024 | manipulation | manipulator | VLA, IL | 312 | [📄](https://arxiv.org/abs/2312.13139)  |
 | [CrossFormer](https://github.com/rail-berkeley/crossformer) | UC Berkeley / others | 2024 | manipulation | manipulator, mobile | IL, VLA | 283 | [📄](https://arxiv.org/abs/2408.11812) [🤗](https://huggingface.co/rail-berkeley/crossformer) |
 | [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia | 2024 | manipulation | manipulator | VLA, diffusion | 0 | [📄](https://cogact.github.io/CogACT_paper.pdf) [🤗](https://huggingface.co/CogACT) |
+| [RoboMamba](https://github.com/lmzpai/roboMamba) | Peking University / AI2Robotics | 2024 | manipulation | manipulator | VLA, IL | 0 | [📄](https://arxiv.org/abs/2406.04339)  |
 
 ---
 

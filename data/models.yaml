@@ -452,3 +452,41 @@
   - VLA
   - diffusion
   - foundation-model
+- id: robomamba
+  name: RoboMamba
+  org: Peking University / AI2Robotics
+  year: 2024
+  description_en: RoboMamba is an efficient end-to-end Vision-Language-Action model
+    that leverages the Mamba state space model for robotic reasoning and manipulation
+    with linear inference complexity. It integrates a vision encoder with Mamba, aligning
+    visual tokens with language embeddings, and uses a lightweight policy head for
+    SE(3) pose prediction. RoboMamba achieves 3x faster inference than existing VLA
+    models while maintaining competitive reasoning and manipulation performance.
+  description_ko: RoboMamba는 Mamba 상태 공간 모델을 활용하여 선형 추론 복잡도로 로봇 추론과 조작을 수행하는 효율적인
+    엔드투엔드 VLA 모델입니다. 비전 인코더와 Mamba를 통합하여 시각 토큰을 언어 임베딩과 정렬하고, 경량 정책 헤드로 SE(3) 포즈 예측을
+    수행합니다. 기존 VLA 모델 대비 3배 빠른 추론 속도를 달성하면서도 경쟁력 있는 추론 및 조작 성능을 보여줍니다.
+  github_url: https://github.com/lmzpai/roboMamba
+  paper_url: https://arxiv.org/abs/2406.04339
+  hf_url: ''
+  project_url: https://sites.google.com/view/robomamba-web
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  - IL
+  framework:
+  - pytorch
+  communication:
+  - other
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-06-29'
+  added_date: '2026-06-29'
+  tags:
+  - VLA
+  - mamba
+  - state-space-model
