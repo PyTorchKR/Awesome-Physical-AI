@@ -452,3 +452,48 @@
   - VLA
   - diffusion
   - foundation-model
+- id: dial
+  name: DIAL
+  org: The University of Hong Kong / XPENG Robotics
+  year: 2026
+  description_en: DIAL is a dual-system VLA framework that decouples high-level intent
+    from low-level action via a differentiable latent bottleneck. A VLM-based System-2
+    predicts future visual states as latent intent, which a lightweight DiT-based
+    System-1 decodes into robot actions through flow matching. Built on GR00T N1.5
+    with Qwen2.5-VL, DIAL achieves state-of-the-art performance with 10x fewer demonstrations
+    and robust zero-shot generalization on a humanoid robot.
+  description_ko: DIAL은 고수준 의도와 저수준 행동을 미분 가능한 잠재 병목으로 분리하는 이중 시스템 VLA 프레임워크입니다. VLM
+    기반 System-2가 미래 시각 상태를 잠재 의도로 예측하고, 경량 DiT 기반 System-1이 플로우 매칭을 통해 로봇 행동으로 디코딩합니다.
+    GR00T N1.5와 Qwen2.5-VL 기반으로, 기존 대비 10배 적은 시연으로 SOTA를 달성하며 휴머노이드 로봇에서 강건한 제로샷 일반화
+    능력을 보여줍니다.
+  github_url: https://github.com/xpeng-robotics/DIAL
+  paper_url: https://arxiv.org/abs/2603.29844
+  hf_url: https://huggingface.co/xpeng-robotics/DIAL_checkpoints
+  project_url: https://xpeng-robotics.github.io/dial/
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  - humanoid
+  learning:
+  - VLA
+  - IL
+  - diffusion
+  - world_model
+  framework:
+  - pytorch
+  communication:
+  - other
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-06-29'
+  added_date: '2026-06-29'
+  tags:
+  - VLA
+  - dual-system
+  - latent-world-model
+  - humanoid
+  - flow-matching
+  - GR00T-N1.5
