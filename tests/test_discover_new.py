@@ -38,6 +38,7 @@ def test_classify_url():
     assert dn.classify_url("https://huggingface.co/datasets/org/data") == "hf_dataset"
     assert dn.classify_url("https://huggingface.co/org/model") == "hf_model"
     assert dn.classify_url("https://arxiv.org/abs/1234.56789") == "paper"
+    assert dn.classify_url("https://doi.org/10.1109/example") == "publication"
     assert dn.classify_url("https://project.example") == "project"
 
 
@@ -174,6 +175,26 @@ def test_decide_recommendation_needs_review_without_public_links():
     assert "no verified public" in reasons[0]
 
 
+def test_publication_link_does_not_count_as_project_page():
+    candidate = _candidate()
+    candidate.relevance = "high"
+    candidate.checks = [
+        dn.LinkCheck(
+            url="https://doi.org/10.1109/example",
+            kind="publication",
+            status="available",
+        )
+    ]
+
+    availability = dn.build_artifact_availability(candidate)
+    recommendation, reasons = dn.decide_recommendation(candidate)
+
+    assert availability["has_verified_project_page"] is False
+    assert availability["has_verified_artifact_link"] is False
+    assert recommendation == "needs_review"
+    assert "no verified public" in reasons[0]
+
+
 def test_evaluate_candidates_no_verify_marks_links_not_checked(monkeypatch):
     monkeypatch.setattr(dn, "load_yaml_entries", lambda: [])
     candidate = _candidate(links=[
@@ -212,7 +233,7 @@ def test_run_llm_review_command_handles_invalid_json():
     assert "invalid JSON" in review["reason"]
 
 
-def test_fetch_arxiv_cs_ro_paginates_until_max_results(monkeypatch):
+def test_fetch_arxiv_cs_ro_uses_submitted_date_range_and_max_results(monkeypatch):
     calls = []
 
     def entry(arxiv_id):
@@ -227,37 +248,28 @@ def test_fetch_arxiv_cs_ro_paginates_until_max_results(monkeypatch):
         </entry>
         """
 
-    pages = [
-        f"""<?xml version="1.0" encoding="UTF-8"?>
-        <feed xmlns="http://www.w3.org/2005/Atom">{entry("2601.00001")}</feed>""",
-        f"""<?xml version="1.0" encoding="UTF-8"?>
-        <feed xmlns="http://www.w3.org/2005/Atom">{entry("2601.00002")}</feed>""",
-    ]
-
     class Response:
         status_code = 200
         headers = {}
-
-        def __init__(self, text):
-            self.text = text
+        text = f"""<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">{entry("2601.00001")}</feed>"""
 
         def raise_for_status(self):
             pass
 
     def fake_http_get(_url, *, params=None, **_kwargs):
-        calls.append(params["start"])
-        return Response(pages[len(calls) - 1])
+        calls.append(params)
+        return Response()
 
-    monkeypatch.setattr(dn, "ARXIV_PAGE_SIZE", 1)
     monkeypatch.setattr(dn, "http_get", fake_http_get)
 
-    candidates = dn.fetch_arxiv_cs_ro(days=30, max_results=2)
+    candidates = dn.fetch_arxiv_cs_ro(days=7, max_results=20)
 
-    assert calls == [0, 1]
-    assert [candidate.url for candidate in candidates] == [
-        "https://arxiv.org/abs/2601.00001",
-        "https://arxiv.org/abs/2601.00002",
-    ]
+    assert len(calls) == 1
+    assert calls[0]["start"] == 0
+    assert calls[0]["max_results"] == 20
+    assert calls[0]["search_query"].startswith("cat:cs.RO AND submittedDate:[")
+    assert candidates[0].url == "https://arxiv.org/abs/2601.00001"
 
 
 def test_evaluate_candidates_runs_llm_review_command(monkeypatch):
@@ -276,8 +288,20 @@ def test_render_markdown_states_no_issues_created():
     candidate = _candidate()
     candidate.relevance = "high"
     candidate.recommendation = "needs_review"
-    candidate.llm_review = {"status": "ok", "decision": "needs_review", "reason": "official link unclear"}
+    candidate.llm_review_selected = True
+    candidate.llm_review = {
+        "status": "ok",
+        "decision": "needs_review",
+        "entry_summary": "A public-facing summary.",
+        "maintainer_summary": "A maintainer-facing summary.",
+        "reason": "official link unclear",
+    }
     report = dn.render_markdown([candidate])
     assert "No GitHub issues were created" in report
     assert "Open Robot Manipulation Policy" in report
+    assert "Targeted for optional LLM review" in report
     assert "LLM decision" in report
+    assert "LLM entry summary" in report
+    assert "A public-facing summary." in report
+    assert "LLM maintainer summary" in report
+    assert "A maintainer-facing summary." in report

@@ -106,6 +106,20 @@ def main() -> int:
             )
         )
         return 0
+    if not api_key.isascii():
+        print(
+            json.dumps(
+                {
+                    "status": "error",
+                    "reason": (
+                        "GEMINI_API_KEY must be the real ASCII API key. "
+                        "It looks like a non-ASCII placeholder or invalid value was provided."
+                    ),
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 0
 
     model = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
 

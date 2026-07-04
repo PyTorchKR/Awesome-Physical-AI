@@ -41,7 +41,6 @@ import yaml
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
-ARXIV_PAGE_SIZE = 100
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_HEADERS = {
@@ -257,6 +256,8 @@ def classify_url(url: str) -> str:
         return "hf_model"
     if host == "arxiv.org":
         return "paper"
+    if host == "doi.org":
+        return "publication"
     return "project"
 
 
@@ -550,7 +551,10 @@ def build_artifact_availability(candidate: Candidate) -> dict[str, Any]:
 def decide_recommendation_details(candidate: Candidate) -> tuple[str, list[str], str]:
     reasons: list[str] = []
     availability = candidate.artifact_availability or build_artifact_availability(candidate)
-    available_links = [c for c in candidate.checks if c.status == "available" and c.kind != "paper"]
+    available_links = [
+        c for c in candidate.checks
+        if c.status == "available" and c.kind not in {"paper", "publication"}
+    ]
     bad_links = [c for c in candidate.checks if c.status in BAD_LINK_STATUSES]
 
     has_verified_model = availability.get("has_verified_model_link", False)
@@ -704,71 +708,59 @@ def run_llm_review_command(candidate: Candidate, command: str) -> dict[str, Any]
     return review
 
 
+def arxiv_submitted_date_range(days: int) -> str:
+    end = datetime.now(timezone.utc)
+    start = end - timedelta(days=days)
+    return f"[{start:%Y%m%d%H%M} TO {end:%Y%m%d%H%M}]"
+
+
 def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    params = {
+        "search_query": f"cat:cs.RO AND submittedDate:{arxiv_submitted_date_range(days)}",
+        "start": 0,
+        "max_results": max_results,
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
+    }
+
+    response = http_get(ARXIV_API_URL, params=params, timeout=30)
+    response.raise_for_status()
+
+    root = ET.fromstring(response.text)
     ns = {"atom": "http://www.w3.org/2005/Atom"}
     candidates: list[Candidate] = []
-    start = 0
-    page_size = min(ARXIV_PAGE_SIZE, max_results)
 
-    while len(candidates) < max_results:
-        params = {
-            "search_query": "cat:cs.RO",
-            "start": start,
-            "max_results": page_size,
-            "sortBy": "submittedDate",
-            "sortOrder": "descending",
-        }
+    for entry in root.findall("atom:entry", ns):
+        title = " ".join(entry.findtext("atom:title", default="", namespaces=ns).split())
+        summary = " ".join(entry.findtext("atom:summary", default="", namespaces=ns).split())
+        url = canonicalize_url(entry.findtext("atom:id", default="", namespaces=ns))
+        published = entry.findtext("atom:published", default="", namespaces=ns)
+        authors = [
+            a.findtext("atom:name", default="", namespaces=ns)
+            for a in entry.findall("atom:author", ns)
+        ]
 
-        response = http_get(ARXIV_API_URL, params=params, timeout=30)
-        response.raise_for_status()
+        published_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
 
-        root = ET.fromstring(response.text)
-        entries = root.findall("atom:entry", ns)
-        if not entries:
-            break
+        links = [url]
+        for link in entry.findall("atom:link", ns):
+            href = canonicalize_url(link.attrib.get("href", ""))
+            if href and href not in links:
+                links.append(href)
+        for extracted in extract_urls(summary):
+            if extracted not in links:
+                links.append(extracted)
 
-        reached_cutoff = False
-        for entry in entries:
-            title = " ".join(entry.findtext("atom:title", default="", namespaces=ns).split())
-            summary = " ".join(entry.findtext("atom:summary", default="", namespaces=ns).split())
-            url = canonicalize_url(entry.findtext("atom:id", default="", namespaces=ns))
-            published = entry.findtext("atom:published", default="", namespaces=ns)
-            authors = [
-                a.findtext("atom:name", default="", namespaces=ns)
-                for a in entry.findall("atom:author", ns)
-            ]
-
-            published_dt = datetime.fromisoformat(published.replace("Z", "+00:00"))
-            if published_dt < cutoff:
-                reached_cutoff = True
-                continue
-
-            links = [url]
-            for link in entry.findall("atom:link", ns):
-                href = canonicalize_url(link.attrib.get("href", ""))
-                if href and href not in links:
-                    links.append(href)
-            for extracted in extract_urls(summary):
-                if extracted not in links:
-                    links.append(extracted)
-
-            candidates.append(Candidate(
-                source="arxiv",
-                kind="paper",
-                title=title,
-                url=url,
-                published=published_dt.date().isoformat(),
-                summary=summary[:1200],
-                authors=[a for a in authors if a],
-                links=links,
-            ))
-            if len(candidates) >= max_results:
-                break
-
-        if reached_cutoff:
-            break
-        start += page_size
+        candidates.append(Candidate(
+            source="arxiv",
+            kind="paper",
+            title=title,
+            url=url,
+            published=published_dt.date().isoformat(),
+            summary=summary[:1200],
+            authors=[a for a in authors if a],
+            links=links,
+        ))
 
     return candidates
 
@@ -807,7 +799,7 @@ def evaluate_candidates(
 
         official_candidate_links = [
             url for url in candidate.links
-            if classify_url(url) in {"github", "hf_model", "hf_dataset", "hf_space", "project"}
+            if classify_url(url) in {"github", "hf_model", "hf_dataset", "hf_space", "project", "publication"}
         ]
         if verify_links:
             candidate.checks = [verify_link(url) for url in official_candidate_links]
@@ -883,13 +875,13 @@ def render_markdown(candidates: list[Candidate]) -> str:
         count = sum(1 for c in candidates if c.review_bucket == review_bucket)
         lines.append(f"| `{review_bucket}` | {count} |")
 
-    llm_selected_count = sum(1 for c in candidates if c.llm_review_selected)
+    llm_target_count = sum(1 for c in candidates if c.llm_review_selected)
     llm_completed_count = sum(1 for c in candidates if c.llm_review.get("status") == "ok")
     lines.extend([
         "",
         "| LLM review | Count |",
         "|---|---:|",
-        f"| `selected` | {llm_selected_count} |",
+        f"| `targeted for optional review` | {llm_target_count} |",
         f"| `completed` | {llm_completed_count} |",
     ])
 
@@ -904,7 +896,7 @@ def render_markdown(candidates: list[Candidate]) -> str:
             f"- Relevance: `{candidate.relevance}`",
             f"- Recommendation: `{candidate.recommendation}`",
             f"- Review bucket: `{candidate.review_bucket}`",
-            f"- LLM review selected: `{candidate.llm_review_selected}`",
+            f"- Targeted for optional LLM review: `{candidate.llm_review_selected}`",
         ])
         if candidate.authors:
             lines.append(f"- Authors: {', '.join(candidate.authors[:8])}")
