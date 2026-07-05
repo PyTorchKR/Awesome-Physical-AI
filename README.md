@@ -7,7 +7,7 @@
 [![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-9-purple)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Organizations](https://img.shields.io/badge/Organizations-30-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
-[![Updated](https://img.shields.io/badge/Updated-2026-06-29-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
+[![Updated](https://img.shields.io/badge/Updated-2026-07-05-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkr.github.io/Awesome-Physical-AI)
 
 > **[👉 인터랙티브 대시보드에서 필터링 및 시각화 보기 | View Interactive Dashboard](https://pytorchkr.github.io/Awesome-Physical-AI)**
