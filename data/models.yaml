@@ -416,3 +416,17 @@
     last_updated: '2026-06-14'
   added_date: '2026-05-17'
   tags: []
+- id: test-entry-pi0
+  name: pi0
+  org: Physical Intelligence
+  year: 2024
+  categories: [policy]
+  hardware: [robot]
+  learning: [imitation]
+  framework: [pytorch]
+  description_en: A Vision-Language-Action flow model for general robot control.
+  description_ko: 범용 로봇 제어를 위한 Vision-Language-Action 플로우 모델입니다.
+  tags: [manipulation, pytorch]
+  github_url: https://github.com/Physical-Intelligence/openpi
+  paper_url: https://arxiv.org/abs/2410.24164
+  added_date: '2026-07-06'
