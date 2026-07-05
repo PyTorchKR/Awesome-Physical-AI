@@ -21,8 +21,8 @@ README_PATH = ROOT / "README.md"
 TODAY = date.today().isoformat()
 
 BADGE_BASE = "https://img.shields.io/badge"
-REPO_URL = "https://github.com/PyTorchKorea/Awesome-Physical-AI"
-DASHBOARD_URL = "https://pytorchkorea.github.io/Awesome-Physical-AI"
+REPO_URL = "https://github.com/PyTorchKR/Awesome-Physical-AI"
+DASHBOARD_URL = "https://pytorchkr.github.io/Awesome-Physical-AI"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
