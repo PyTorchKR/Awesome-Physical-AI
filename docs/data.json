@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "last_updated": "2026-06-14",
-    "total_models": 13,
-    "total_datasets": 10,
+    "last_updated": "2026-06-29",
+    "total_models": 14,
+    "total_datasets": 11,
     "total_tools": 9,
-    "total_orgs": 28
+    "total_orgs": 30
   },
   "models": [
     {
@@ -514,6 +514,46 @@
       },
       "added_date": "2026-05-17",
       "tags": []
+    },
+    {
+      "id": "cogact",
+      "name": "CogACT",
+      "org": "Tsinghua University / Microsoft Research Asia",
+      "year": 2024,
+      "description_en": "CogACT is a componentized Vision-Language-Action architecture that decouples cognition from action. It utilizes powerful Vision-Language Models  to extract cognitive features, which then condition a specialized Diffusion Transformer-based action module to predict continuous, temporally-correlated robotic action sequences.",
+      "description_ko": "CogACT는 기존의 단일 신경망 모델들과 달리 인지와 행동을 명확히 분리한 컴포넌트형 비전-언어-행동 모델입니다. 강력한 비전-언어 모델을 통해 인지적 특징을 추출하고, 이를 조건으로 특화된 Diffusion Transformer 기반의 행동 모델이 복잡하고 연속적인 로봇의 물리적 제어 궤적을 예측합니다.",
+      "github_url": "https://github.com/microsoft/CogACT",
+      "paper_url": "https://cogact.github.io/CogACT_paper.pdf",
+      "hf_url": "https://huggingface.co/CogACT",
+      "project_url": "https://cogact.github.io/",
+      "categories": [
+        "manipulation"
+      ],
+      "hardware": [
+        "manipulator"
+      ],
+      "learning": [
+        "VLA",
+        "diffusion"
+      ],
+      "framework": [
+        "pytorch"
+      ],
+      "communication": [
+        "other"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "github_forks": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-21"
+      },
+      "added_date": "2026-06-21",
+      "tags": [
+        "VLA",
+        "diffusion",
+        "foundation-model"
+      ]
     }
   ],
   "datasets": [
@@ -972,6 +1012,49 @@
         "data-efficient",
         "Franka"
       ]
+    },
+    {
+      "id": "behavior-1k",
+      "name": "BEHAVIOR-1K",
+      "org": "Stanford Vision and Learning Lab",
+      "year": 2024,
+      "description_en": "BEHAVIOR-1K is a comprehensive simulation benchmark for human-centered robotics. It features 1,000 everyday activities grounded in 50 scenes (houses, gardens, restaurants, offices, etc.) with more than 9,000 objects annotated with rich physical and semantic properties. Built on OmniGibson, it supports physics-based simulation of rigid bodies, deformable bodies, and liquids. The benchmark supports 12 robot models and provides 10,000+ human-collected teleoperation demonstrations across 50 tasks.",
+      "description_ko": "BEHAVIOR-1K는 인간 중심 로봇 공학을 위한 종합적인 시뮬레이션 벤치마크입니다. 주택, 정원, 레스토랑, 사무실 등 50개의 사실적인 장면에 1,000개의 일상 활동이 정의되어 있으며, 풍부한 물리적·의미론적 속성이 주석된 9,000개 이상의 객체를 포함합니다. OmniGibson을 기반으로 강체, 변형체, 액체의 물리 기반 시뮬레이션을 지원합니다. 12종의 로봇 모델을 지원하며, 50개 태스크에 걸쳐 10,000건 이상의 텔레오퍼레이션 시연 데이터를 제공합니다.",
+      "github_url": "https://github.com/StanfordVL/BEHAVIOR-1K",
+      "paper_url": "https://arxiv.org/abs/2403.09227",
+      "hf_url": "https://huggingface.co/behavior-1k",
+      "project_url": "https://behavior.stanford.edu/",
+      "categories": [
+        "manipulation",
+        "navigation"
+      ],
+      "hardware": [
+        "manipulator",
+        "mobile"
+      ],
+      "source": [
+        "simulation",
+        "teleoperation",
+        "human_demo"
+      ],
+      "modality": [
+        "rgb",
+        "depth",
+        "proprioception"
+      ],
+      "scale": {
+        "trajectories": 10000,
+        "hours": 0,
+        "environments": 0,
+        "robots": 12
+      },
+      "stats": {
+        "github_stars": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-29"
+      },
+      "added_date": "2026-06-29",
+      "tags": []
     }
   ],
   "tools": [

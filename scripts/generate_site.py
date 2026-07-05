@@ -201,7 +201,7 @@ A bot will automatically create a PR from your issue for admin review.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 ### Datasets
 

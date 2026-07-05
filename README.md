@@ -3,11 +3,11 @@
 > 🤖 Physical AI (Robotics & Embodied AI) 분야의 오픈소스 모델, 데이터셋, 시뮬레이터를 체계적으로 정리한 큐레이션 리스트.
 > A curated list of open-source models, datasets, and simulators for Physical AI (Robotics & Embodied AI).
 
-[![Models](https://img.shields.io/badge/Models-13-blue)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Datasets](https://img.shields.io/badge/Datasets-10-green)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Models](https://img.shields.io/badge/Models-14-blue)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-9-purple)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Organizations](https://img.shields.io/badge/Organizations-28-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
-[![Updated](https://img.shields.io/badge/Updated-2026-06-14-lightgrey)](https://github.com/PyTorchKorea/Awesome-Physical-AI)
+[![Organizations](https://img.shields.io/badge/Organizations-30-orange)](https://pytorchkorea.github.io/Awesome-Physical-AI)
+[![Updated](https://img.shields.io/badge/Updated-2026-06-29-lightgrey)](https://github.com/PyTorchKorea/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkorea.github.io/Awesome-Physical-AI)
 
 > **[👉 인터랙티브 대시보드에서 필터링 및 시각화 보기 | View Interactive Dashboard](https://pytorchkorea.github.io/Awesome-Physical-AI)**
@@ -43,6 +43,7 @@
 | [RoboFlamingo](https://github.com/RoboFlamingo/RoboFlamingo) | ByteDance | 2023 | manipulation | manipulator | VLA | 434 | [📄](https://arxiv.org/abs/2311.01378)  |
 | [GR-1](https://github.com/bytedance/GR-1) | BAAI / Beijing Academy of AI | 2024 | manipulation | manipulator | VLA, IL | 312 | [📄](https://arxiv.org/abs/2312.13139)  |
 | [CrossFormer](https://github.com/rail-berkeley/crossformer) | UC Berkeley / others | 2024 | manipulation | manipulator, mobile | IL, VLA | 283 | [📄](https://arxiv.org/abs/2408.11812) [🤗](https://huggingface.co/rail-berkeley/crossformer) |
+| [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia | 2024 | manipulation | manipulator | VLA, diffusion | 0 | [📄](https://cogact.github.io/CogACT_paper.pdf) [🤗](https://huggingface.co/CogACT) |
 
 ---
 
@@ -62,6 +63,7 @@
 | [Language-Table](https://github.com/google-research/language-table) | Google | 2023 | manipulation | real, simulation, teleoperation | rgb, proprioception | 600,000 | 360 | [📄](https://arxiv.org/abs/2210.01911) [🤗](https://huggingface.co/datasets/google/language_table) |
 | [BridgeData V2](https://github.com/rail-berkeley/bridge_data_v2) | UC Berkeley | 2023 | manipulation | real, teleoperation | rgb, proprioception | 60,096 | 282 | [📄](https://arxiv.org/abs/2308.12952) [🤗](https://huggingface.co/datasets/rail-berkeley/bridge_orig) |
 | [RH20T](https://github.com/rh20t/rh20t_api) | Shanghai AI Lab | 2023 | manipulation, dexterous | real, teleoperation | rgb, rgbd, tactile, proprioception, audio | 110,000 | 108 | [📄](https://arxiv.org/abs/2307.00595)  |
+| [BEHAVIOR-1K](https://github.com/StanfordVL/BEHAVIOR-1K) | Stanford Vision and Learning Lab | 2024 | manipulation, navigation | simulation, teleoperation, human_demo | rgb, depth, proprioception | 10,000 | 0 | [📄](https://arxiv.org/abs/2403.09227) [🤗](https://huggingface.co/behavior-1k) |
 
 ---
 
@@ -107,7 +109,7 @@ A bot will automatically create a PR from your issue for admin review.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 ### Datasets
 

@@ -109,7 +109,7 @@ YAML 파일 작성 시 아래 유효값만 사용해야 합니다.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **데이터셋**
 
@@ -236,7 +236,7 @@ Only the following values are valid in YAML files.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **Datasets**
 
