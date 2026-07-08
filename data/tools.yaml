@@ -239,3 +239,39 @@
   - manipulation
   - rendering
   - ManiSkill
+- id: isaac-sim
+  name: Isaac Sim
+  org: NVIDIA
+  year: 2025
+  description_en: Isaac Sim is an open-source robotics simulation platform built on
+    NVIDIA Omniverse and OpenUSD. It combines GPU-accelerated PhysX physics, photorealistic
+    RTX rendering, and multi-sensor simulation to support end-to-end workflows including
+    synthetic data generation, reinforcement learning, ROS 2 integration, and digital
+    twin simulation. It supports importing robots from URDF, MJCF, and CAD formats,
+    and serves as the foundation for Isaac Lab.
+  description_ko: Isaac Sim은 NVIDIA Omniverse와 OpenUSD를 기반으로 구축된 오픈소스 로보틱스 시뮬레이션 플랫폼입니다.
+    GPU 가속 PhysX 물리 엔진, 사실적인 RTX 렌더링, 다중 센서 시뮬레이션을 결합하여 합성 데이터 생성, 강화학습, ROS 2 통합,
+    디지털 트윈 시뮬레이션 등 엔드투엔드 워크플로우를 지원합니다. URDF, MJCF, CAD 형식의 로봇 가져오기를 지원하며, Isaac Lab의
+    기반 플랫폼 역할을 합니다.
+  github_url: https://github.com/isaac-sim/IsaacSim
+  paper_url: N/A
+  project_url: https://developer.nvidia.com/isaac/sim
+  type: full_stack
+  gpu_accelerated: true
+  ros_support: true
+  language:
+  - Python
+  - C++
+  stats:
+    github_stars: 0
+    last_updated: '2026-07-08'
+  added_date: '2026-07-08'
+  tags:
+  - PhysX
+  - RTX-rendering
+  - Omniverse
+  - OpenUSD
+  - synthetic-data
+  - digital-twin
+  - sensor-simulation
+  - sim2real
