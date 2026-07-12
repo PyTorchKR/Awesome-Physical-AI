@@ -21,10 +21,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 24952
-    github_forks: 4804
+    github_stars: 25719
+    github_forks: 5054
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2024-06-01'
   tags:
   - imitation-learning
@@ -55,10 +55,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 12331
-    github_forks: 2066
+    github_stars: 12747
+    github_forks: 2188
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2024-10-31'
   tags:
   - foundation-model
@@ -87,10 +87,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 6421
-    github_forks: 756
-    hf_downloads: 1198411
-    last_updated: '2026-06-14'
+    github_stars: 6598
+    github_forks: 794
+    hf_downloads: 943275
+    last_updated: '2026-07-12'
   added_date: '2024-06-13'
   tags:
   - VLA
@@ -119,10 +119,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 1669
-    github_forks: 268
-    hf_downloads: 48
-    last_updated: '2026-06-14'
+    github_stars: 1701
+    github_forks: 271
+    hf_downloads: 74
+    last_updated: '2026-07-12'
   added_date: '2023-10-01'
   tags:
   - generalist
@@ -151,10 +151,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 2001
-    github_forks: 388
+    github_stars: 2060
+    github_forks: 396
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2023-04-01'
   tags:
   - ALOHA
@@ -183,10 +183,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 4270
-    github_forks: 782
+    github_stars: 4365
+    github_forks: 801
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2023-03-07'
   tags:
   - diffusion
@@ -217,10 +217,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 4439
-    github_forks: 730
+    github_stars: 4448
+    github_forks: 732
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2024-01-04'
   tags:
   - mobile-manipulation
@@ -249,10 +249,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 849
+    github_stars: 850
     github_forks: 122
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2024-06-14'
   tags:
   - humanoid
@@ -282,10 +282,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 7335
-    github_forks: 1255
-    hf_downloads: 144
-    last_updated: '2026-06-14'
+    github_stars: 7557
+    github_forks: 1324
+    hf_downloads: 196
+    last_updated: '2026-07-12'
   added_date: '2025-03-19'
   tags:
   - humanoid
@@ -313,10 +313,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 434
+    github_stars: 436
     github_forks: 37
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2023-11-02'
   tags:
   - VLA
@@ -345,10 +345,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 312
-    github_forks: 15
+    github_stars: 310
+    github_forks: 16
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2024-01-01'
   tags:
   - video-pretraining
@@ -379,8 +379,8 @@
   stats:
     github_stars: 283
     github_forks: 37
-    hf_downloads: 12
-    last_updated: '2026-06-14'
+    hf_downloads: 9
+    last_updated: '2026-07-12'
   added_date: '2024-08-21'
   tags:
   - cross-embodiment
@@ -410,10 +410,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 473
-    github_forks: 21
+    github_stars: 475
+    github_forks: 22
     hf_downloads: 0
-    last_updated: '2026-06-14'
+    last_updated: '2026-07-12'
   added_date: '2026-05-17'
   tags: []
 - id: cogact
@@ -443,10 +443,10 @@
   communication:
   - other
   stats:
-    github_stars: 0
-    github_forks: 0
+    github_stars: 428
+    github_forks: 39
     hf_downloads: 0
-    last_updated: '2026-06-21'
+    last_updated: '2026-07-12'
   added_date: '2026-06-21'
   tags:
   - VLA
