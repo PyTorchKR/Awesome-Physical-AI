@@ -452,3 +452,48 @@
   - VLA
   - diffusion
   - foundation-model
+- id: dial
+  name: DIAL
+  org: The University of Hong Kong / XPENG Robotics
+  year: 2026
+  description_en: DIAL introduces a differentiable latent intent bottleneck for end-to-end
+    VLA learning. The VLM predicts future visual states as latent intent, and the
+    policy must bridge the gap between current and predicted states to generate actions,
+    preventing the shortcut learning. DIAL achieves state-of-the-art performance on
+    RoboCasa GR1 Tabletop with 10× fewer demonstrations and robust zero-shot generalization
+    on a humanoid robot.
+  description_ko: DIAL은 end-to-end VLA 학습을 위한 미분 가능한 잠재 의도 병목 구조를 도입합니다. VLM이 미래 시각
+    상태를 잠재 의도로 예측하고, policy는 현재 상태와 예측된 상태 간의 간극을 메우도록 행동을 생성합니다. 이를 통해 미래 예측을 선택적
+    정보로 취급할 때 발생하는 shortcut learning을 구조적으로 방지합니다. DIAL은 RoboCasa GR1 Tabletop에서 10배
+    적은 시연으로 SOTA를 달성하며 휴머노이드 로봇에서 강건한 제로샷 일반화를 보여줍니다.
+  github_url: https://github.com/xpeng-robotics/DIAL
+  paper_url: https://arxiv.org/abs/2603.29844
+  hf_url: https://huggingface.co/xpeng-robotics/DIAL_checkpoints
+  project_url: https://xpeng-robotics.github.io/dial/
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  - humanoid
+  learning:
+  - VLA
+  - IL
+  - diffusion
+  - world_model
+  framework:
+  - pytorch
+  communication:
+  - other
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-07-13'
+  added_date: '2026-07-13'
+  tags:
+  - VLA
+  - dual-system
+  - latent-world-model
+  - humanoid
+  - flow-matching
+  - GR00T-N1.5
