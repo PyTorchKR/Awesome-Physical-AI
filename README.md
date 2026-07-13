@@ -3,11 +3,11 @@
 > 🤖 Physical AI (Robotics & Embodied AI) 분야의 오픈소스 모델, 데이터셋, 시뮬레이터를 체계적으로 정리한 큐레이션 리스트.
 > A curated list of open-source models, datasets, and simulators for Physical AI (Robotics & Embodied AI).
 
-[![Models](https://img.shields.io/badge/Models-14-blue)](https://pytorchkr.github.io/Awesome-Physical-AI)
+[![Models](https://img.shields.io/badge/Models-15-blue)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-10-purple)](https://pytorchkr.github.io/Awesome-Physical-AI)
-[![Organizations](https://img.shields.io/badge/Organizations-30-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
-[![Updated](https://img.shields.io/badge/Updated-2026-07-08-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
+[![Organizations](https://img.shields.io/badge/Organizations-31-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
+[![Updated](https://img.shields.io/badge/Updated-2026-07-13-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkr.github.io/Awesome-Physical-AI)
 
 > **[👉 인터랙티브 대시보드에서 필터링 및 시각화 보기 | View Interactive Dashboard](https://pytorchkr.github.io/Awesome-Physical-AI)**
@@ -44,6 +44,7 @@
 | [GR-1](https://github.com/bytedance/GR-1) | BAAI / Beijing Academy of AI | 2024 | manipulation | manipulator | VLA, IL | 312 | [📄](https://arxiv.org/abs/2312.13139)  |
 | [CrossFormer](https://github.com/rail-berkeley/crossformer) | UC Berkeley / others | 2024 | manipulation | manipulator, mobile | IL, VLA | 283 | [📄](https://arxiv.org/abs/2408.11812) [🤗](https://huggingface.co/rail-berkeley/crossformer) |
 | [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia | 2024 | manipulation | manipulator | VLA, diffusion | 0 | [📄](https://cogact.github.io/CogACT_paper.pdf) [🤗](https://huggingface.co/CogACT) |
+| [DIAL](https://github.com/xpeng-robotics/DIAL) | The University of Hong Kong / XPENG Robotics | 2026 | manipulation | manipulator, humanoid | VLA, IL, diffusion, world_model | 0 | [📄](https://arxiv.org/abs/2603.29844) [🤗](https://huggingface.co/xpeng-robotics/DIAL_checkpoints) |
 
 ---
 
