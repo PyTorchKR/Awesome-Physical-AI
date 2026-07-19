@@ -18,8 +18,8 @@
   - python
   - c++
   stats:
-    github_stars: 13859
-    last_updated: '2026-06-14'
+    github_stars: 14254
+    last_updated: '2026-07-19'
   added_date: '2022-10-18'
   tags:
   - physics-engine
@@ -45,8 +45,8 @@
   language:
   - python
   stats:
-    github_stars: 7438
-    last_updated: '2026-06-14'
+    github_stars: 7700
+    last_updated: '2026-07-19'
   added_date: '2023-05-01'
   tags:
   - simulation
@@ -72,8 +72,8 @@
   language:
   - python
   stats:
-    github_stars: 29334
-    last_updated: '2026-06-14'
+    github_stars: 29598
+    last_updated: '2026-07-19'
   added_date: '2024-12-01'
   tags:
   - simulation
@@ -98,8 +98,8 @@
   language:
   - python
   stats:
-    github_stars: 1087
-    last_updated: '2026-06-14'
+    github_stars: 1124
+    last_updated: '2026-07-19'
   added_date: '2024-05-09'
   tags:
   - benchmark
@@ -125,8 +125,8 @@
   language:
   - python
   stats:
-    github_stars: 2462
-    last_updated: '2026-06-14'
+    github_stars: 2515
+    last_updated: '2026-07-19'
   added_date: '2020-09-25'
   tags:
   - benchmark
@@ -151,8 +151,8 @@
   language:
   - python
   stats:
-    github_stars: 1461
-    last_updated: '2026-06-14'
+    github_stars: 1552
+    last_updated: '2026-07-19'
   added_date: '2024-06-04'
   tags:
   - household
@@ -177,8 +177,8 @@
   language:
   - python
   stats:
-    github_stars: 3191
-    last_updated: '2026-06-14'
+    github_stars: 3205
+    last_updated: '2026-07-19'
   added_date: '2021-06-25'
   tags:
   - JAX
@@ -204,8 +204,8 @@
   language:
   - python
   stats:
-    github_stars: 4616
-    last_updated: '2026-06-14'
+    github_stars: 4639
+    last_updated: '2026-07-19'
   added_date: '2018-01-01'
   tags:
   - MuJoCo
@@ -231,8 +231,8 @@
   - python
   - c++
   stats:
-    github_stars: 780
-    last_updated: '2026-06-14'
+    github_stars: 796
+    last_updated: '2026-07-19'
   added_date: '2020-03-18'
   tags:
   - articulated-objects
@@ -263,8 +263,8 @@
   - Python
   - C++
   stats:
-    github_stars: 0
-    last_updated: '2026-07-08'
+    github_stars: 3730
+    last_updated: '2026-07-19'
   added_date: '2026-07-08'
   tags:
   - PhysX
