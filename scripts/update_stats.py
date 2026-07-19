@@ -32,6 +32,8 @@ log = logging.getLogger(__name__)
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
+GITHUB_REPO = os.environ.get("GITHUB_REPOSITORY", "")
 TODAY = date.today().isoformat()
 
 GITHUB_HEADERS = {
@@ -41,6 +43,12 @@ GITHUB_HEADERS = {
 if GITHUB_TOKEN:
     GITHUB_HEADERS["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
+HF_HEADERS = {}
+if HF_TOKEN:
+    HF_HEADERS["Authorization"] = f"Bearer {HF_TOKEN}"
+
+_broken_urls: list[tuple[str, str, str]] = []  # (entry_id, field, url)
+
 
 def _parse_github_slug(url: str) -> str | None:
     if not url:
@@ -49,7 +57,7 @@ def _parse_github_slug(url: str) -> str | None:
     return m.group(1) if m else None
 
 
-def fetch_github_stats(github_url: str) -> dict:
+def fetch_github_stats(github_url: str, entry_id: str = "") -> dict:
     slug = _parse_github_slug(github_url)
     if not slug:
         return {}
@@ -61,6 +69,7 @@ def fetch_github_stats(github_url: str) -> dict:
         )
         if resp.status_code == 404:
             log.warning("GitHub repo not found: %s", slug)
+            _broken_urls.append((entry_id, "github_url", github_url))
             return {}
         resp.raise_for_status()
         data = resp.json()
@@ -90,6 +99,7 @@ def fetch_hf_downloads(hf_url: str) -> int:
     try:
         resp = requests.get(
             f"https://huggingface.co/api/{kind}/{slug}",
+            headers=HF_HEADERS,
             timeout=15,
         )
         if resp.status_code == 404:
@@ -113,12 +123,33 @@ def save_yaml(path: Path, data: list[dict]) -> None:
         yaml.dump(data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
 
+def create_broken_url_issue(broken: list[tuple[str, str, str]]) -> None:
+    if not GITHUB_REPO or not GITHUB_TOKEN:
+        log.warning("Cannot create issue: GITHUB_REPOSITORY or GITHUB_TOKEN not set")
+        return
+    rows = "\n".join(f"- `{eid}` · `{field}`: {url}" for eid, field, url in broken)
+    body = (
+        f"The weekly stats update on {TODAY} found **{len(broken)}** broken URL(s) "
+        f"that returned 404.\n\nPlease update or remove these entries:\n\n{rows}"
+    )
+    resp = requests.post(
+        f"https://api.github.com/repos/{GITHUB_REPO}/issues",
+        headers=GITHUB_HEADERS,
+        json={"title": f"chore: broken URLs detected ({TODAY})", "body": body, "labels": ["data-quality"]},
+        timeout=15,
+    )
+    if resp.status_code == 201:
+        log.info("Created issue: %s", resp.json().get("html_url"))
+    else:
+        log.error("Failed to create issue: %s %s", resp.status_code, resp.text)
+
+
 def update_entry(entry: dict) -> dict:
     entry_id = entry.get("id", "?")
     log.info("Updating: %s", entry_id)
     stats = entry.setdefault("stats", {})
 
-    gh_stats = fetch_github_stats(entry.get("github_url", ""))
+    gh_stats = fetch_github_stats(entry.get("github_url", ""), entry_id)
     if gh_stats:
         stats.update(gh_stats)
         log.info("  stars=%d forks=%d", stats.get("github_stars", 0), stats.get("github_forks", 0))
@@ -140,7 +171,7 @@ def update_tool_entry(entry: dict) -> dict:
     log.info("Updating tool: %s", entry_id)
     stats = entry.setdefault("stats", {})
 
-    gh_stats = fetch_github_stats(entry.get("github_url", ""))
+    gh_stats = fetch_github_stats(entry.get("github_url", ""), entry_id)
     if gh_stats:
         stats["github_stars"] = gh_stats.get("github_stars", 0)
         log.info("  stars=%d", stats["github_stars"])
@@ -183,9 +214,14 @@ def update_tools_file(yaml_path: Path) -> int:
 def main() -> None:
     if not GITHUB_TOKEN:
         log.warning("GITHUB_TOKEN not set — rate-limited to 60 requests/hour.")
+    if not HF_TOKEN:
+        log.warning("HF_TOKEN not set — gated HuggingFace repos will return 401.")
     update_file(DATA_DIR / "models.yaml")
     update_file(DATA_DIR / "datasets.yaml")
     update_tools_file(DATA_DIR / "tools.yaml")
+    if _broken_urls:
+        log.warning("%d broken URL(s) detected — creating GitHub issue", len(_broken_urls))
+        create_broken_url_issue(_broken_urls)
     log.info("Done.")
 
 

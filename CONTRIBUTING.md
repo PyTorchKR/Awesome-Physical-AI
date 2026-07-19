@@ -24,9 +24,9 @@
 
 | 유형 | 이슈 템플릿 |
 |------|------------|
-| 모델 | [➕ 모델 추가](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-model.yml) |
-| 데이터셋 | [➕ 데이터셋 추가](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-dataset.yml) |
-| 시뮬레이터 | [➕ 시뮬레이터 추가](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-simulator.yml) |
+| 모델 | [➕ 모델 추가](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-model.yml) |
+| 데이터셋 | [➕ 데이터셋 추가](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-dataset.yml) |
+| 시뮬레이터 | [➕ 시뮬레이터 추가](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-simulator.yml) |
 
 이슈를 등록하면 봇이 자동으로 PR을 생성합니다. 관리자가 검토 후 머지합니다.
 
@@ -109,7 +109,7 @@ YAML 파일 작성 시 아래 유효값만 사용해야 합니다.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **데이터셋**
 
@@ -150,9 +150,9 @@ There are two types of contributions:
 
 | Type | Template |
 |------|----------|
-| Model | [➕ Add a Model](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-model.yml) |
-| Dataset | [➕ Add a Dataset](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-dataset.yml) |
-| Simulator | [➕ Add a Simulator](https://github.com/PyTorchKorea/Awesome-Physical-AI/issues/new?template=add-simulator.yml) |
+| Model | [➕ Add a Model](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-model.yml) |
+| Dataset | [➕ Add a Dataset](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-dataset.yml) |
+| Simulator | [➕ Add a Simulator](https://github.com/PyTorchKR/Awesome-Physical-AI/issues/new?template=add-simulator.yml) |
 
 A bot will automatically open a PR from your issue. Maintainers will review and merge.
 
@@ -236,7 +236,7 @@ Only the following values are valid in YAML files.
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
 | `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
 | `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` |
+| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **Datasets**
 

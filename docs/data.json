@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "last_updated": "2026-04-25",
-    "total_models": 12,
-    "total_datasets": 10,
-    "total_tools": 9,
-    "total_orgs": 27
+    "last_updated": "2026-07-08",
+    "total_models": 14,
+    "total_datasets": 11,
+    "total_tools": 10,
+    "total_orgs": 30
   },
   "models": [
     {
@@ -34,10 +34,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 23337,
-        "github_forks": 4280,
+        "github_stars": 24952,
+        "github_forks": 4804,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-06-01",
       "tags": [
@@ -75,10 +75,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 11365,
-        "github_forks": 1782,
+        "github_stars": 12331,
+        "github_forks": 2066,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-10-31",
       "tags": [
@@ -113,10 +113,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 5936,
-        "github_forks": 701,
-        "hf_downloads": 1709553,
-        "last_updated": "2026-04-19"
+        "github_stars": 6421,
+        "github_forks": 756,
+        "hf_downloads": 1198411,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-06-13",
       "tags": [
@@ -152,10 +152,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 1623,
-        "github_forks": 269,
-        "hf_downloads": 71,
-        "last_updated": "2026-04-19"
+        "github_stars": 1669,
+        "github_forks": 268,
+        "hf_downloads": 48,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2023-10-01",
       "tags": [
@@ -192,10 +192,10 @@
         "ros2"
       ],
       "stats": {
-        "github_stars": 1879,
-        "github_forks": 372,
+        "github_stars": 2001,
+        "github_forks": 388,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2023-04-01",
       "tags": [
@@ -231,10 +231,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 4026,
-        "github_forks": 742,
+        "github_stars": 4270,
+        "github_forks": 782,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2023-03-07",
       "tags": [
@@ -273,10 +273,10 @@
         "ros2"
       ],
       "stats": {
-        "github_stars": 4407,
-        "github_forks": 733,
+        "github_stars": 4439,
+        "github_forks": 730,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-01-04",
       "tags": [
@@ -313,10 +313,10 @@
         "ros2"
       ],
       "stats": {
-        "github_stars": 837,
-        "github_forks": 123,
+        "github_stars": 849,
+        "github_forks": 122,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-06-14",
       "tags": [
@@ -354,10 +354,10 @@
         "ros2"
       ],
       "stats": {
-        "github_stars": 6729,
-        "github_forks": 1137,
-        "hf_downloads": 283,
-        "last_updated": "2026-04-19"
+        "github_stars": 7335,
+        "github_forks": 1255,
+        "hf_downloads": 144,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2025-03-19",
       "tags": [
@@ -392,10 +392,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 429,
-        "github_forks": 39,
+        "github_stars": 434,
+        "github_forks": 37,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2023-11-02",
       "tags": [
@@ -430,10 +430,10 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 309,
-        "github_forks": 16,
+        "github_stars": 312,
+        "github_forks": 15,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-01-01",
       "tags": [
@@ -469,16 +469,90 @@
       ],
       "communication": [],
       "stats": {
-        "github_stars": 282,
-        "github_forks": 35,
-        "hf_downloads": 22,
-        "last_updated": "2026-04-19"
+        "github_stars": 283,
+        "github_forks": 37,
+        "hf_downloads": 12,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-08-21",
       "tags": [
         "cross-embodiment",
         "generalist",
         "transformer"
+      ]
+    },
+    {
+      "id": "robovlms",
+      "name": "RoboVLMs",
+      "org": "Multiple",
+      "year": 2025,
+      "description_en": "A systematically optimized VLA  framework for generalist robots. It easily transfers various foundation VLMs into robust control policies with minimal manual design and supports cross-embodiment data integration.",
+      "description_ko": "범용 로봇을 위해 체계적으로 최적화된 VLA 프레임워크. 최소한의 설계로 다양한 파운데이션 VLM을 강건한 로봇 제어 정책으로 전환하며, 다기종 로봇 데이터 통합을 지원합니다.",
+      "github_url": "https://github.com/Robot-VLAs/RoboVLMs",
+      "paper_url": "https://arxiv.org/abs/2412.14058",
+      "hf_url": "https://huggingface.co/robovlms/RoboVLMs",
+      "project_url": "https://robovlms.github.io/",
+      "categories": [
+        "manipulation"
+      ],
+      "hardware": [
+        "manipulator"
+      ],
+      "learning": [
+        "VLA",
+        "IL"
+      ],
+      "framework": [
+        "pytorch"
+      ],
+      "communication": [],
+      "stats": {
+        "github_stars": 473,
+        "github_forks": 21,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-14"
+      },
+      "added_date": "2026-05-17",
+      "tags": []
+    },
+    {
+      "id": "cogact",
+      "name": "CogACT",
+      "org": "Tsinghua University / Microsoft Research Asia",
+      "year": 2024,
+      "description_en": "CogACT is a componentized Vision-Language-Action architecture that decouples cognition from action. It utilizes powerful Vision-Language Models  to extract cognitive features, which then condition a specialized Diffusion Transformer-based action module to predict continuous, temporally-correlated robotic action sequences.",
+      "description_ko": "CogACT는 기존의 단일 신경망 모델들과 달리 인지와 행동을 명확히 분리한 컴포넌트형 비전-언어-행동 모델입니다. 강력한 비전-언어 모델을 통해 인지적 특징을 추출하고, 이를 조건으로 특화된 Diffusion Transformer 기반의 행동 모델이 복잡하고 연속적인 로봇의 물리적 제어 궤적을 예측합니다.",
+      "github_url": "https://github.com/microsoft/CogACT",
+      "paper_url": "https://cogact.github.io/CogACT_paper.pdf",
+      "hf_url": "https://huggingface.co/CogACT",
+      "project_url": "https://cogact.github.io/",
+      "categories": [
+        "manipulation"
+      ],
+      "hardware": [
+        "manipulator"
+      ],
+      "learning": [
+        "VLA",
+        "diffusion"
+      ],
+      "framework": [
+        "pytorch"
+      ],
+      "communication": [
+        "other"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "github_forks": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-21"
+      },
+      "added_date": "2026-06-21",
+      "tags": [
+        "VLA",
+        "diffusion",
+        "foundation-model"
       ]
     }
   ],
@@ -517,10 +591,10 @@
         "robots": 22
       },
       "stats": {
-        "github_stars": 1782,
-        "hf_downloads": 13129,
-        "last_updated": "2026-04-19",
-        "github_forks": 112
+        "github_stars": 1883,
+        "hf_downloads": 20001,
+        "last_updated": "2026-06-14",
+        "github_forks": 117
       },
       "added_date": "2023-10-13",
       "tags": [
@@ -563,10 +637,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 345,
+        "github_stars": 371,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 68
+        "last_updated": "2026-06-14",
+        "github_forks": 79
       },
       "added_date": "2024-03-19",
       "tags": [
@@ -608,10 +682,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 279,
+        "github_stars": 282,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 35
+        "last_updated": "2026-06-14",
+        "github_forks": 36
       },
       "added_date": "2023-08-24",
       "tags": [
@@ -657,10 +731,10 @@
         "robots": 10
       },
       "stats": {
-        "github_stars": 105,
+        "github_stars": 108,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 13
+        "last_updated": "2026-06-14",
+        "github_forks": 14
       },
       "added_date": "2023-07-02",
       "tags": [
@@ -701,10 +775,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 1742,
+        "github_stars": 1941,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 395
+        "last_updated": "2026-06-14",
+        "github_forks": 422
       },
       "added_date": "2023-06-05",
       "tags": [
@@ -747,10 +821,10 @@
         "robots": 8
       },
       "stats": {
-        "github_stars": 2797,
-        "hf_downloads": 79,
-        "last_updated": "2026-04-19",
-        "github_forks": 466
+        "github_stars": 2996,
+        "hf_downloads": 247,
+        "last_updated": "2026-06-14",
+        "github_forks": 501
       },
       "added_date": "2023-02-09",
       "tags": [
@@ -793,9 +867,9 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 356,
+        "github_stars": 360,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
+        "last_updated": "2026-06-14",
         "github_forks": 30
       },
       "added_date": "2022-10-04",
@@ -839,10 +913,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 748,
+        "github_stars": 773,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 119
+        "last_updated": "2026-06-14",
+        "github_forks": 122
       },
       "added_date": "2024-03-15",
       "tags": [
@@ -882,10 +956,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 1793,
+        "github_stars": 1836,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19",
-        "github_forks": 342
+        "last_updated": "2026-06-14",
+        "github_forks": 344
       },
       "added_date": "2019-10-23",
       "tags": [
@@ -902,7 +976,7 @@
       "year": 2023,
       "description_en": "A dataset for scalable data-efficient learning of robotic manipulation strategies. 7,500 demonstrations covering 38 tasks with semantic augmentation.",
       "description_ko": "로봇 조작 전략의 확장 가능하고 데이터 효율적인 학습을 위한 데이터셋. 의미론적 증강으로 38개 태스크에 걸쳐 7,500개의 시연.",
-      "github_url": "https://github.com/rail-berkeley/roboagent",
+      "github_url": "https://github.com/robopen/roboagent",
       "paper_url": "https://arxiv.org/abs/2309.01918",
       "hf_url": "",
       "project_url": "https://robopen.github.io",
@@ -927,9 +1001,10 @@
         "robots": 1
       },
       "stats": {
-        "github_stars": 390,
+        "github_stars": 372,
         "hf_downloads": 0,
-        "last_updated": "2026-04-19"
+        "last_updated": "2026-06-14",
+        "github_forks": 30
       },
       "added_date": "2023-09-05",
       "tags": [
@@ -937,6 +1012,49 @@
         "data-efficient",
         "Franka"
       ]
+    },
+    {
+      "id": "behavior-1k",
+      "name": "BEHAVIOR-1K",
+      "org": "Stanford Vision and Learning Lab",
+      "year": 2024,
+      "description_en": "BEHAVIOR-1K is a comprehensive simulation benchmark for human-centered robotics. It features 1,000 everyday activities grounded in 50 scenes (houses, gardens, restaurants, offices, etc.) with more than 9,000 objects annotated with rich physical and semantic properties. Built on OmniGibson, it supports physics-based simulation of rigid bodies, deformable bodies, and liquids. The benchmark supports 12 robot models and provides 10,000+ human-collected teleoperation demonstrations across 50 tasks.",
+      "description_ko": "BEHAVIOR-1K는 인간 중심 로봇 공학을 위한 종합적인 시뮬레이션 벤치마크입니다. 주택, 정원, 레스토랑, 사무실 등 50개의 사실적인 장면에 1,000개의 일상 활동이 정의되어 있으며, 풍부한 물리적·의미론적 속성이 주석된 9,000개 이상의 객체를 포함합니다. OmniGibson을 기반으로 강체, 변형체, 액체의 물리 기반 시뮬레이션을 지원합니다. 12종의 로봇 모델을 지원하며, 50개 태스크에 걸쳐 10,000건 이상의 텔레오퍼레이션 시연 데이터를 제공합니다.",
+      "github_url": "https://github.com/StanfordVL/BEHAVIOR-1K",
+      "paper_url": "https://arxiv.org/abs/2403.09227",
+      "hf_url": "https://huggingface.co/behavior-1k",
+      "project_url": "https://behavior.stanford.edu/",
+      "categories": [
+        "manipulation",
+        "navigation"
+      ],
+      "hardware": [
+        "manipulator",
+        "mobile"
+      ],
+      "source": [
+        "simulation",
+        "teleoperation",
+        "human_demo"
+      ],
+      "modality": [
+        "rgb",
+        "depth",
+        "proprioception"
+      ],
+      "scale": {
+        "trajectories": 10000,
+        "hours": 0,
+        "environments": 0,
+        "robots": 12
+      },
+      "stats": {
+        "github_stars": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-06-29"
+      },
+      "added_date": "2026-06-29",
+      "tags": []
     }
   ],
   "tools": [
@@ -959,8 +1077,8 @@
         "c++"
       ],
       "stats": {
-        "github_stars": 8700,
-        "last_updated": "2026-04-12"
+        "github_stars": 13859,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2022-10-18",
       "tags": [
@@ -988,8 +1106,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 6962,
-        "last_updated": "2026-04-12"
+        "github_stars": 7438,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2023-05-01",
       "tags": [
@@ -1017,8 +1135,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 28523,
-        "last_updated": "2026-04-12"
+        "github_stars": 29334,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-12-01",
       "tags": [
@@ -1045,8 +1163,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 950,
-        "last_updated": "2026-04-12"
+        "github_stars": 1087,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-05-09",
       "tags": [
@@ -1074,8 +1192,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 1700,
-        "last_updated": "2026-04-12"
+        "github_stars": 2462,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2020-09-25",
       "tags": [
@@ -1102,8 +1220,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 1400,
-        "last_updated": "2026-04-12"
+        "github_stars": 1461,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2024-06-04",
       "tags": [
@@ -1130,8 +1248,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 2400,
-        "last_updated": "2026-04-12"
+        "github_stars": 3191,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2021-06-25",
       "tags": [
@@ -1159,8 +1277,8 @@
         "python"
       ],
       "stats": {
-        "github_stars": 3800,
-        "last_updated": "2026-04-12"
+        "github_stars": 4616,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2018-01-01",
       "tags": [
@@ -1188,8 +1306,8 @@
         "c++"
       ],
       "stats": {
-        "github_stars": 900,
-        "last_updated": "2026-04-12"
+        "github_stars": 780,
+        "last_updated": "2026-06-14"
       },
       "added_date": "2020-03-18",
       "tags": [
@@ -1197,6 +1315,39 @@
         "manipulation",
         "rendering",
         "ManiSkill"
+      ]
+    },
+    {
+      "id": "isaac-sim",
+      "name": "Isaac Sim",
+      "org": "NVIDIA",
+      "year": 2025,
+      "description_en": "Isaac Sim is an open-source robotics simulation platform built on NVIDIA Omniverse and OpenUSD. It combines GPU-accelerated PhysX physics, photorealistic RTX rendering, and multi-sensor simulation to support end-to-end workflows including synthetic data generation, reinforcement learning, ROS 2 integration, and digital twin simulation. It supports importing robots from URDF, MJCF, and CAD formats, and serves as the foundation for Isaac Lab.",
+      "description_ko": "Isaac Sim은 NVIDIA Omniverse와 OpenUSD를 기반으로 구축된 오픈소스 로보틱스 시뮬레이션 플랫폼입니다. GPU 가속 PhysX 물리 엔진, 사실적인 RTX 렌더링, 다중 센서 시뮬레이션을 결합하여 합성 데이터 생성, 강화학습, ROS 2 통합, 디지털 트윈 시뮬레이션 등 엔드투엔드 워크플로우를 지원합니다. URDF, MJCF, CAD 형식의 로봇 가져오기를 지원하며, Isaac Lab의 기반 플랫폼 역할을 합니다.",
+      "github_url": "https://github.com/isaac-sim/IsaacSim",
+      "paper_url": "N/A",
+      "project_url": "https://developer.nvidia.com/isaac/sim",
+      "type": "full_stack",
+      "gpu_accelerated": true,
+      "ros_support": true,
+      "language": [
+        "Python",
+        "C++"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "last_updated": "2026-07-08"
+      },
+      "added_date": "2026-07-08",
+      "tags": [
+        "PhysX",
+        "RTX-rendering",
+        "Omniverse",
+        "OpenUSD",
+        "synthetic-data",
+        "digital-twin",
+        "sensor-simulation",
+        "sim2real"
       ]
     }
   ]

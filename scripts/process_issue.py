@@ -23,7 +23,38 @@ import sys
 from pathlib import Path
 from datetime import date
 
+import requests
 import yaml
+
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
+
+
+def check_url(url: str) -> tuple[bool, str]:
+    """HEAD request a URL. Returns (is_valid, warning_message).
+
+    404 → invalid (broken link).
+    401/403 → valid URL but access-restricted; return warning only.
+    Other errors → treated as valid to avoid false positives.
+    """
+    if not url:
+        return True, ""
+    headers = {}
+    if "huggingface.co" in url and HF_TOKEN:
+        headers["Authorization"] = f"Bearer {HF_TOKEN}"
+    elif "github.com" in url and GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    try:
+        resp = requests.head(url, headers=headers, timeout=10, allow_redirects=True)
+        if resp.status_code == 404:
+            return False, f"URL returned 404 (not found): {url}"
+        if resp.status_code == 401:
+            return True, f"URL requires authentication (gated): {url}"
+        if resp.status_code == 403:
+            return True, f"URL is access-restricted: {url}"
+    except requests.RequestException:
+        pass  # network errors are not treated as broken links
+    return True, ""
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -252,6 +283,25 @@ def main() -> None:
 
     if not entry["name"]:
         print("::error::Entry 'name' is required")
+        sys.exit(1)
+
+    url_fields = ["github_url", "paper_url", "hf_url", "project_url"]
+    broken, warned = [], []
+    for field in url_fields:
+        url = entry.get(field, "")
+        if not url:
+            continue
+        valid, msg = check_url(url)
+        if not valid:
+            broken.append(field)
+        elif msg:
+            warned.append(field)
+
+    for field in warned:
+        print(f"::warning::{field} is access-restricted (gated or private) — included anyway")
+    if broken:
+        field_list = ", ".join(broken)
+        print(f"::error::The following URLs returned 404: {field_list}. Please fix the links and edit the issue to retry.")
         sys.exit(1)
 
     append_entry(yaml_path, entry)

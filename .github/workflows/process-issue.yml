@@ -46,6 +46,8 @@ jobs:
           ISSUE_TYPE:   ${{ steps.type.outputs.issue_type }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HF_TOKEN:     ${{ secrets.HF_TOKEN }}
         run: python scripts/process_issue.py
 
       - name: Regenerate site data

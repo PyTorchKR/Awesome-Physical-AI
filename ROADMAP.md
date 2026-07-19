@@ -1,6 +1,6 @@
 # Awesome Physical AI — Roadmap & Progress
 
-> 최종 업데이트: 2026-04-19
+> 최종 업데이트: 2026-05-03
 
 ---
 
@@ -37,22 +37,30 @@
 
 ## 🔧 알려진 이슈 / 즉시 해결 필요
 
-- [ ] `process-issue.yml` 동작을 위해 GitHub 레포에 라벨 `add-model`, `add-dataset` 수동 생성 필요
-- [ ] 차트 렌더링 수정 후 실제 GitHub Pages에서 동작 확인 필요
-- [ ] `process_issue.py`의 체크박스 파싱 로직 실제 이슈 폼으로 테스트 필요
+- [x] `process-issue.yml` 동작을 위해 GitHub 레포에 라벨 `add-model`, `add-dataset` 수동 생성 필요
+- [x] 차트 렌더링 수정 후 실제 GitHub Pages에서 동작 확인 필요
+- [x] `process_issue.py`의 체크박스 파싱 로직 실제 이슈 폼으로 테스트 필요
+- [x] 모델/데이터/시뮬레이터 추가해도 자동으로 PR 안 생기는 문제 해결
+- [x] 모델/데이터/시뮬레이터 추가 시 URL 검증 기능 추가
+- [x] HuggingFace Read 권한 토큰 추가해서 모델 정보 접근 불가 문제 해결
+- [x] roboagent 데이터셋 깃허브(코드) 링크 접속 불가 문제 해결 및 추후 링크 접속 불가 문제 발생 시 이슈 자동 생성
+- [ ] 프론티어 모델 성능 정보 시각화
+- [ ] 모델/데이터셋/시뮬레이터 이슈를 만든 사람이 github 봇이 만든 PR의 공동 기여자로 자동 추가되기
+- [x] PyTorchKR 조직명 변경에 따른 수정
+
 
 ---
 
 ## 📋 TODO — 데이터 확충
-@ 심기택
+## @ 심기택 -> 5/23(토) robot foundation model 세미나 (가안), 5/10(일) 모델/데이터/시뮬레이터 관련 조사 내용 공유
 - [ ] 모델 추가 (우선순위 높음) 
-  - [ ] RoboVLMs, CogACT, RoboMamba 등 2025년 신규 모델
+  - [x] RoboVLMs, CogACT, RoboMamba 등 2025년 신규 모델
   - [ ] Unitree / Fourier / Agility 등 하드웨어 업체 오픈소스
   - [ ] IsaacGym / MuJoCo Playground 등 시뮬레이터
 - [ ] 데이터셋 추가
   - [ ] AgiBot World (2025)
   - [ ] π-data (Physical Intelligence)
-  - [ ] BEHAVIOR-1K
+  - [x] BEHAVIOR-1K
 - [ ] 각 항목에 라이선스 정보 필드 추가 (`license: MIT / Apache-2.0 / CC-BY`)
 - [ ] 모델 파라미터 수 필드 추가 (`params: "7B"`)
 
@@ -60,7 +68,7 @@
 
 ## 📋 TODO — 고도화
 
-### A. 데이터 자동 수집 (난이도: 중) @정인호 
+### A. 데이터 자동 수집 (난이도: 중) @정인호 5/10(일) 크롤링 동작 간단히 확인 후 동작 구체화
 - [ ] `scripts/discover_new.py` 추가
 - [ ] arXiv `cs.RO` 카테고리 주간 신규 논문 감지
 - [ ] HuggingFace `robotics` 태그 신규 모델 감지
@@ -70,10 +78,10 @@
 - [ ] 대시보드에서 모델 2~3개 선택 → 스펙 나란히 비교하는 뷰
 - [ ] GitHub 스타, 하드웨어 타겟, 학습 방식 등 비교 테이블
 
-### C. 필터 URL 파라미터화 (난이도: 하)
-- [ ] 필터 상태를 URL 쿼리스트링에 반영
-- [ ] 예: `?tab=models&category=manipulation&hardware=humanoid`
-- [ ] SNS·슬랙에서 특정 필터 결과를 바로 공유 가능
+### C. 필터 URL 파라미터화 (난이도: 하) @강정민 5/10(일) html 코드 관련해서 조사한 내용 + 진행할 방향에 대한 공유
+- [x] 필터 상태를 URL 쿼리스트링에 반영
+- [x] 예: `?tab=models&category=manipulation&hardware=humanoid`
+- [x] SNS·슬랙에서 특정 필터 결과를 바로 공유 가능
 
 ### D. 월간 뉴스레터 자동 생성 (난이도: 중)
 - [ ] 매월 1일 GitHub Actions 실행
@@ -90,7 +98,9 @@
 - [ ] 도커/requirements/... 등 환경 파일 제공 여부를 필터링 기준으로 추가
 - [ ] 하드웨어 종속성(GPU 사양) - 해당 모델이 어떤 gpu에서 테스트 했는지 태깅
 - [ ] 모델별로 커뮤니티성 댓글창 만들기(이슈 다 안 눌러봐도 reproduction/실행 방법 전파 가능)
-- [ ] 태그나 요약문이 진실인지 확인하는 프롬프트/테스트 코드 추가 (LLM 프롬프트의 신생 루키로 세상에 이름을 알리고 싶은 경우) @임예윤
+
+### 임예윤 5/10(일) 논문 abstract/코드 readme 룰베이스 필터링 기준 검토 (1차) + LLM 프롬프트 (2차)
+- [ ] 태그나 요약문이 진실인지 확인하는 프롬프트/테스트 코드 추가 (LLM 프롬프트의 신생 루키로 세상에 이름을 알리고 싶은 경우)
 
 ---
 
