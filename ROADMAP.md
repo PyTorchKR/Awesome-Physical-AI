@@ -45,7 +45,7 @@
 - [x] HuggingFace Read 권한 토큰 추가해서 모델 정보 접근 불가 문제 해결
 - [x] roboagent 데이터셋 깃허브(코드) 링크 접속 불가 문제 해결 및 추후 링크 접속 불가 문제 발생 시 이슈 자동 생성
 - [ ] 프론티어 모델 성능 정보 시각화
-- [ ] 모델/데이터셋/시뮬레이터 이슈를 만든 사람이 github 봇이 만든 PR의 공동 기여자로 자동 추가되기
+- [x] 모델/데이터셋/시뮬레이터 이슈를 만든 사람이 github 봇이 만든 PR의 공동 기여자로 자동 추가되기
 - [x] PyTorchKR 조직명 변경에 따른 수정
 
 
@@ -56,7 +56,7 @@
 - [ ] 모델 추가 (우선순위 높음) 
   - [x] RoboVLMs, CogACT, RoboMamba 등 2025년 신규 모델
   - [ ] Unitree / Fourier / Agility 등 하드웨어 업체 오픈소스
-  - [ ] IsaacGym / MuJoCo Playground 등 시뮬레이터
+  - [x] IsaacGym / MuJoCo Playground 등 시뮬레이터
 - [ ] 데이터셋 추가
   - [ ] AgiBot World (2025)
   - [ ] π-data (Physical Intelligence)
@@ -69,8 +69,8 @@
 ## 📋 TODO — 고도화
 
 ### A. 데이터 자동 수집 (난이도: 중) @정인호 5/10(일) 크롤링 동작 간단히 확인 후 동작 구체화
-- [ ] `scripts/discover_new.py` 추가
-- [ ] arXiv `cs.RO` 카테고리 주간 신규 논문 감지
+- [x] `scripts/discover_new.py` 추가
+- [x] arXiv `cs.RO` 카테고리 주간 신규 논문 감지
 - [ ] HuggingFace `robotics` 태그 신규 모델 감지
 - [ ] 후보 목록을 GitHub Issue로 자동 등록
 
@@ -100,7 +100,7 @@
 - [ ] 모델별로 커뮤니티성 댓글창 만들기(이슈 다 안 눌러봐도 reproduction/실행 방법 전파 가능)
 
 ### 임예윤 5/10(일) 논문 abstract/코드 readme 룰베이스 필터링 기준 검토 (1차) + LLM 프롬프트 (2차)
-- [ ] 태그나 요약문이 진실인지 확인하는 프롬프트/테스트 코드 추가 (LLM 프롬프트의 신생 루키로 세상에 이름을 알리고 싶은 경우)
+- [x] 태그나 요약문이 진실인지 확인하는 프롬프트/테스트 코드 추가 (LLM 프롬프트의 신생 루키로 세상에 이름을 알리고 싶은 경우)
 
 ---
 
