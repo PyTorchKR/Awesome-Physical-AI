@@ -59,13 +59,18 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_AUTHOR_ID: ${{ github.event.issue.user.id }}
         run: |
           BRANCH="add-entry/issue-${ISSUE_NUMBER}"
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add data/ docs/data.json docs/index.html README.md
-          git commit -m "feat: add entry from issue #${ISSUE_NUMBER}"
+          # Credit the issue author via a Co-authored-by trailer so they are counted
+          # as a contributor once the PR is merged (survives squash merges too).
+          git commit \
+            -m "feat: add entry from issue #${ISSUE_NUMBER}" \
+            -m "Co-authored-by: ${ISSUE_AUTHOR} <${ISSUE_AUTHOR_ID}+${ISSUE_AUTHOR}@users.noreply.github.com>"
           git push --force origin "$BRANCH"
           PR_BODY=$(printf 'Resolves #%s\n\nAuto-generated from issue by @%s.\n\n**Please review the entry before merging.**' "${ISSUE_NUMBER}" "${ISSUE_AUTHOR}")
           EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')
