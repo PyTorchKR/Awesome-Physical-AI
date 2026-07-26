@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "last_updated": "2026-07-25",
-    "total_models": 14,
+    "last_updated": "2026-07-26",
+    "total_models": 15,
     "total_datasets": 11,
     "total_tools": 11,
-    "total_orgs": 31
+    "total_orgs": 32
   },
   "models": [
     {
@@ -553,6 +553,52 @@
         "VLA",
         "diffusion",
         "foundation-model"
+      ]
+    },
+    {
+      "id": "dial",
+      "name": "DIAL",
+      "org": "The University of Hong Kong / XPENG Robotics",
+      "year": 2026,
+      "description_en": "DIAL is a dual-system VLA framework connected by a differentiable latent bottleneck. A VLM-based System-2 performs latent world modeling to predict future observations as latent intent, and a lightweight flow-matching System-1 acts as a latent inverse dynamics model, deriving actions from the gap between the current observation and the predicted intent. Since actions cannot be produced without passing through this intent, the bottleneck structurally prevents the intent-bypass shortcut of prior dual-system VLAs and lets action gradients refine the VLM. Built on GR00T N1.5 with a Qwen2.5-VL backbone, DIAL achieves SOTA on RoboCasa GR1 Tabletop with 10× fewer demonstrations and robust zero-shot generalization on a humanoid robot.",
+      "description_ko": "DIAL은 미분 가능한 잠재 병목으로 연결된 이중 시스템 VLA 프레임워크입니다. VLM 기반 System-2가 잠재 월드 모델링으로 미래 관측을 잠재 의도로 예측하고, flow-matching 기반 System-1이 잠재 역동역학 모델로서 현재 관측과 예측된 의도의 차이로부터 행동을 도출합니다. 행동이 이 의도를 반드시 통과해야만 생성되므로, 이 병목은 기존 이중 시스템 VLA의 의도 우회(shortcut)를 구조적으로 차단하고 행동 그래디언트가 VLM을 refine하도록 합니다. GR00T N1.5와 Qwen2.5-VL 백본 기반으로, RoboCasa GR1 Tabletop에서 10배 적은 시연으로 SOTA를 달성하며 휴머노이드 로봇에서 강건한 제로샷 일반화를 보여줍니다.",
+      "github_url": "https://github.com/xpeng-robotics/DIAL",
+      "paper_url": "https://arxiv.org/abs/2603.29844",
+      "hf_url": "https://huggingface.co/xpeng-robotics/DIAL_checkpoints",
+      "project_url": "https://xpeng-robotics.github.io/dial/",
+      "categories": [
+        "manipulation"
+      ],
+      "hardware": [
+        "manipulator",
+        "humanoid"
+      ],
+      "learning": [
+        "VLA",
+        "IL",
+        "diffusion",
+        "world_model"
+      ],
+      "framework": [
+        "pytorch"
+      ],
+      "communication": [
+        "other"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "github_forks": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-07-26"
+      },
+      "added_date": "2026-07-26",
+      "tags": [
+        "VLA",
+        "dual-system",
+        "latent-world-model",
+        "humanoid",
+        "flow-matching",
+        "GR00T-N1.5"
       ]
     }
   ],
