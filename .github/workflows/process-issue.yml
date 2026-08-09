@@ -47,6 +47,11 @@ jobs:
           else
             echo "action=add" >> $GITHUB_OUTPUT
           fi
+          # Carry the issue's own label over to the PR. Taken verbatim rather than
+          # rebuilt from the pieces above, because the simulator label reads
+          # "add-simulator" while the internal type is "tool".
+          ENTRY_LABEL=$(echo "$LABELS" | grep -oE '"(add|edit)-(model|dataset|simulator)"' | head -1 | tr -d '"')
+          echo "entry_label=$ENTRY_LABEL" >> $GITHUB_OUTPUT
 
       - name: Parse issue and apply entry
         env:
@@ -71,6 +76,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ACTION: ${{ steps.type.outputs.action }}
+          ENTRY_LABEL: ${{ steps.type.outputs.entry_label }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
@@ -102,7 +108,8 @@ jobs:
               --title "$PR_TITLE" \
               --body "$PR_BODY" \
               --head "$BRANCH" \
-              --base main
+              --base main \
+              --label "$ENTRY_LABEL"
           else
             echo "PR #${EXISTING_PR} already exists for this branch — skipping creation"
           fi
