@@ -33,6 +33,7 @@ body:
         - "robovlms — RoboVLMs"
         - "cogact — CogACT"
         - "dial — DIAL"
+        - "rdt-1b — RDT-1B"
         # AUTOGEN:models:end
     validations:
       required: true
