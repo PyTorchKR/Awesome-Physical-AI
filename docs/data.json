@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "last_updated": "2026-08-23",
-    "total_models": 16,
+    "last_updated": "2026-08-30",
+    "total_models": 17,
     "total_datasets": 11,
     "total_tools": 11,
-    "total_orgs": 33
+    "total_orgs": 34
   },
   "models": [
     {
@@ -641,6 +641,48 @@
         "bimanual-manipulation",
         "diffusion",
         "foundation-model"
+      ]
+    },
+    {
+      "id": "rt-1",
+      "name": "RT-1",
+      "org": "Google Research",
+      "year": 2023,
+      "description_en": "RT-1 is a 35M-parameter Transformer policy trained on 130k real-world demonstrations covering 700+ tasks collected over 17 months with 13 robots. Its key contribution is showing that a single high-capacity, absorbent model can be trained at scale on large, diverse, real-world robot data and still run efficiently (3Hz) on hardware, thanks to an efficient tokenization scheme (FiLM-conditioned EfficientNet + TokenLearner) that compresses vision-language inputs before autoregressive discretized action prediction — establishing a template that later VLA models built on.",
+      "description_ko": "RT-1은 13대의 로봇으로 17개월에 걸쳐 수집한 130만 개(700개 이상 태스크)의 실제 시연 데이터로 학습된 3,500만 파라미터 규모의 Transformer 정책입니다. 핵심 기여는 크고 다양한 실제 로봇 데이터로 대규모 모델을 학습시키면서도, 효율적인 토큰화 기법(FiLM 조건부 EfficientNet + TokenLearner)으로 비전-언어 입력을 압축해 이산화된 액션을 자기회귀적으로 예측함으로써 실제 하드웨어에서 3Hz로 동작할 만큼 효율성을 유지했다는 점입니다. 이후 등장한 VLA 모델들의 기본 틀을 제시한 연구로 평가받습니다.",
+      "github_url": "https://github.com/google-research/robotics_transformer",
+      "paper_url": "https://arxiv.org/abs/2212.06817",
+      "hf_url": "",
+      "project_url": "https://robotics-transformer1.github.io/",
+      "categories": [
+        "manipulation",
+        "navigation"
+      ],
+      "hardware": [
+        "manipulator",
+        "mobile"
+      ],
+      "learning": [
+        "VLA",
+        "IL"
+      ],
+      "framework": [
+        "tensorflow"
+      ],
+      "communication": [
+        "other"
+      ],
+      "stats": {
+        "github_stars": 0,
+        "github_forks": 0,
+        "hf_downloads": 0,
+        "last_updated": "2026-08-30"
+      },
+      "added_date": "2026-08-30",
+      "tags": [
+        "robotics-transformer",
+        "FiLM",
+        "discrete action tokenization"
       ]
     }
   ],
