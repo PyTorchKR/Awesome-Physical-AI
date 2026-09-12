@@ -296,19 +296,28 @@
   name: RoboFlamingo
   org: ByteDance
   year: 2023
-  description_en: A vision-language manipulation policy that fine-tunes OpenFlamingo
-    for robotic control on the CALVIN benchmark.
-  description_ko: CALVIN 벤치마크에서 로봇 제어를 위해 OpenFlamingo를 파인튜닝한 비전-언어 조작 정책.
+  description_en: RoboFlamingo fine-tunes OpenFlamingo, an open-source vision-language
+    model, for language-conditioned robot manipulation. It decomposes the problem
+    so that the VLM handles single-step visual comprehension while a separate explicit
+    policy head models sequential history and predicts actions. Instead of discretizing
+    actions into text tokens, it directly regresses continuous 7-DoF actions. It achieves
+    SOTA performance on the CALVIN benchmark with imitation learning alone on a single
+    GPU server.
+  description_ko: RoboFlamingo는 오픈소스 비전-언어 모델인 OpenFlamingo를 언어 조건 기반 로봇 조작에 맞게 파인튜닝한
+    모델입니다. 매 스텝의 시각 이해는 VLM이 담당하고, 순차적인 과거 정보 모델링과 행동 예측은 별도의 명시적 정책 헤드가 담당하도록 문제를
+    분리했습니다. 행동을 텍스트 토큰으로 이산화하지 않고 연속적인 7-DoF 행동을 직접 회귀하는 방식을 사용합니다. 단일 GPU 서버에서 모방학습만으로
+    CALVIN 벤치마크에서 SOTA 성능을 달성합니다.
   github_url: https://github.com/RoboFlamingo/RoboFlamingo
   paper_url: https://arxiv.org/abs/2311.01378
-  hf_url: ''
-  project_url: ''
+  hf_url: https://huggingface.co/robovlms/RoboFlamingo
+  project_url: https://roboflamingo.github.io
   categories:
   - manipulation
   hardware:
   - manipulator
   learning:
   - VLA
+  - IL
   framework:
   - pytorch
   communication: []
@@ -319,9 +328,9 @@
     last_updated: '2026-08-09'
   added_date: '2023-11-02'
   tags:
-  - VLA
-  - CALVIN
+  - VLM
   - OpenFlamingo
+  - imitation learning
 - id: gr1
   name: GR-1
   org: BAAI / Beijing Academy of AI
