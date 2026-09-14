@@ -81,6 +81,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           DISCOVERY_BOT_TOKEN: ${{ secrets.DISCOVERY_BOT_TOKEN }}
+          # Used only for authenticated public-repository link verification.
+          GITHUB_TOKEN: ${{ github.token }}
           SUBMIT_MODE: ${{ github.event_name == 'schedule' || inputs.submit_models == 'true' }}
           LLM_REVIEW_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_review_mode || 'off' }}
           LLM_PROVIDER: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_provider || 'openrouter' }}
@@ -90,7 +92,10 @@ jobs:
           mkdir -p .cache
           ARGS=(
             --days 7
-            --max-arxiv 20
+            # 30 completed weeks ending 2026-09-12: median=257, p95=360,
+            # max=375. 500 leaves 33% headroom above the observed maximum.
+            --max-arxiv 500
+            --max-rechecks 50
             --seen-cache .cache/discover_seen.json
             --format json
             --output discovery_candidates.json
@@ -116,7 +121,10 @@ jobs:
             ARGS+=(--llm-review-command "python scripts/llm_reviewer.py")
           fi
 
-          if [ "$SUBMIT_MODE" = "true" ] && [ -z "$DISCOVERY_BOT_TOKEN" ]; then
+          if [ "$SUBMIT_MODE" != "true" ]; then
+            echo "Manual report-only run; seen-cache will not be updated."
+            ARGS+=(--no-update-seen-cache)
+          elif [ -z "$DISCOVERY_BOT_TOKEN" ]; then
             echo "::warning::DISCOVERY_BOT_TOKEN is not configured; candidates will not be cached so a later run can retry submission."
             ARGS+=(--no-update-seen-cache)
           fi
@@ -150,6 +158,7 @@ jobs:
           python scripts/discovery_model_submitter.py \
             --input discovery_candidates.json \
             --limit "$MAX_SUBMISSIONS" \
+            --seen-cache .cache/discover_seen.json \
             --source-run "$SOURCE_RUN"
 
       - name: Save seen cache

@@ -142,6 +142,8 @@ class Candidate:
     url: str
     published: str
     summary: str
+    updated: str = ""
+    arxiv_version: str = ""
     authors: list[str] = field(default_factory=list)
     links: list[str] = field(default_factory=list)
     checks: list[LinkCheck] = field(default_factory=list)
@@ -721,27 +723,28 @@ def arxiv_submitted_date_range(days: int) -> str:
     return f"[{start:%Y%m%d%H%M} TO {end:%Y%m%d%H%M}]"
 
 
-def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
-    params = {
-        "search_query": f"cat:cs.RO AND submittedDate:{arxiv_submitted_date_range(days)}",
-        "start": 0,
-        "max_results": max_results,
-        "sortBy": "submittedDate",
-        "sortOrder": "descending",
+class ArxivResultLimitError(RuntimeError):
+    """Raised when an arXiv query would silently truncate its result set."""
+
+
+def parse_arxiv_feed(xml: str) -> tuple[list[Candidate], int | None]:
+    root = ET.fromstring(xml)
+    ns = {
+        "atom": "http://www.w3.org/2005/Atom",
+        "opensearch": "http://a9.com/-/spec/opensearch/1.1/",
     }
-
-    response = http_get(ARXIV_API_URL, params=params, timeout=30)
-    response.raise_for_status()
-
-    root = ET.fromstring(response.text)
-    ns = {"atom": "http://www.w3.org/2005/Atom"}
+    total_text = root.findtext("opensearch:totalResults", default="", namespaces=ns).strip()
+    total_results = int(total_text) if total_text.isdigit() else None
     candidates: list[Candidate] = []
 
     for entry in root.findall("atom:entry", ns):
         title = " ".join(entry.findtext("atom:title", default="", namespaces=ns).split())
         summary = " ".join(entry.findtext("atom:summary", default="", namespaces=ns).split())
-        url = canonicalize_url(entry.findtext("atom:id", default="", namespaces=ns))
+        raw_url = entry.findtext("atom:id", default="", namespaces=ns).strip()
+        url = canonicalize_url(raw_url)
         published = entry.findtext("atom:published", default="", namespaces=ns)
+        updated = entry.findtext("atom:updated", default="", namespaces=ns)
+        version_match = re.search(r"(v\d+)$", urlsplit(raw_url).path)
         authors = [
             a.findtext("atom:name", default="", namespaces=ns)
             for a in entry.findall("atom:author", ns)
@@ -765,10 +768,87 @@ def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
             url=url,
             published=published_dt.date().isoformat(),
             summary=summary[:1200],
+            updated=updated,
+            arxiv_version=version_match.group(1) if version_match else "",
             authors=[a for a in authors if a],
             links=links,
         ))
 
+    return candidates, total_results
+
+
+def fetch_arxiv_cs_ro(days: int, max_results: int) -> list[Candidate]:
+    params = {
+        "search_query": f"cat:cs.RO AND submittedDate:{arxiv_submitted_date_range(days)}",
+        "start": 0,
+        "max_results": max_results,
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
+    }
+
+    response = http_get(ARXIV_API_URL, params=params, timeout=30)
+    response.raise_for_status()
+    candidates, total_results = parse_arxiv_feed(response.text)
+    if total_results is not None and total_results > max_results:
+        raise ArxivResultLimitError(
+            f"arXiv query matched {total_results} papers, exceeding --max-arxiv={max_results}"
+        )
+    return candidates
+
+
+def fetch_recent_arxiv_updates(
+    days: int,
+    max_results: int,
+    *,
+    now: datetime | None = None,
+) -> list[Candidate]:
+    """Fetch cs.RO papers revised within the lookback window."""
+    response = http_get(
+        ARXIV_API_URL,
+        params={
+            "search_query": "cat:cs.RO",
+            "start": 0,
+            "max_results": max_results,
+            "sortBy": "lastUpdatedDate",
+            "sortOrder": "descending",
+        },
+        timeout=30,
+    )
+    response.raise_for_status()
+    candidates, _total_results = parse_arxiv_feed(response.text)
+    cutoff = now or datetime.now(timezone.utc)
+    cutoff -= timedelta(days=days)
+
+    recent = [
+        candidate
+        for candidate in candidates
+        if candidate.updated
+        and datetime.fromisoformat(candidate.updated.replace("Z", "+00:00")) >= cutoff
+    ]
+    oldest_returned_is_recent = bool(
+        candidates
+        and candidates[-1].updated
+        and datetime.fromisoformat(candidates[-1].updated.replace("Z", "+00:00")) >= cutoff
+    )
+    if len(candidates) == max_results and oldest_returned_is_recent:
+        raise ArxivResultLimitError(
+            f"at least {max_results} cs.RO papers were updated within {days} days"
+        )
+    return recent
+
+
+def fetch_arxiv_by_ids(arxiv_ids: list[str]) -> list[Candidate]:
+    """Fetch the latest metadata for a small batch of cached arXiv papers."""
+    if not arxiv_ids:
+        return []
+
+    response = http_get(
+        ARXIV_API_URL,
+        params={"id_list": ",".join(arxiv_ids), "start": 0, "max_results": len(arxiv_ids)},
+        timeout=30,
+    )
+    response.raise_for_status()
+    candidates, _total_results = parse_arxiv_feed(response.text)
     return candidates
 
 
@@ -973,7 +1053,7 @@ def write_output(candidates: list[Candidate], output_format: str, output_path: s
 def main() -> int:
     parser = argparse.ArgumentParser(description="Discover recent Physical AI candidates from arXiv cs.RO.")
     parser.add_argument("--days", type=int, default=7, help="Look back this many days.")
-    parser.add_argument("--max-arxiv", type=int, default=20, help="Maximum arXiv papers to fetch.")
+    parser.add_argument("--max-arxiv", type=int, default=500, help="Maximum arXiv papers to fetch.")
     parser.add_argument("--format", choices=("markdown", "json", "jsonl"), default="markdown")
     parser.add_argument("--output", help="Write report to this file instead of stdout.")
     parser.add_argument("--no-verify", action="store_true", help="Skip network checks for extracted official links.")
@@ -1011,7 +1091,7 @@ def main() -> int:
             llm_review_mode=args.llm_review_mode,
             max_ambiguous=args.max_ambiguous,
         )
-    except requests.RequestException as exc:
+    except (requests.RequestException, ArxivResultLimitError) as exc:
         print(f"error: discovery request failed: {exc}", file=sys.stderr)
         return 1
 

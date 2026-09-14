@@ -205,3 +205,92 @@ def test_dry_run_cli_renders_add_model_submission(tmp_path, capsys):
     assert result == 0
     assert "Would submit Add a Model issue: [Model] RoboPolicy" in output
     assert "### ID (slug)\nrobopolicy" in output
+
+
+def test_existing_submission_does_not_consume_limit_and_updates_cache(tmp_path, monkeypatch):
+    first = candidate(url="https://arxiv.org/abs/2601.00001")
+    second = candidate(
+        title="RoboPolicy Two: Imitation Learning for Robot Manipulation",
+        url="https://arxiv.org/abs/2601.00002",
+    )
+    input_path = tmp_path / "candidates.json"
+    input_path.write_text(json.dumps([first, second]), encoding="utf-8")
+    cache_path = tmp_path / "seen.json"
+    cache_path.write_text(
+        json.dumps({
+            "version": 2,
+            "seen": {
+                "https://arxiv.org/abs/2601.00001": {"status": "retry"},
+                "https://arxiv.org/abs/2601.00002": {"status": "retry"},
+            },
+        }),
+        encoding="utf-8",
+    )
+    created = []
+
+    monkeypatch.setattr(
+        submitter,
+        "existing_discovery_keys",
+        lambda **_kwargs: {"https://arxiv.org/abs/2601.00001"},
+    )
+    monkeypatch.setattr(
+        submitter,
+        "create_add_model_issue",
+        lambda **kwargs: created.append(kwargs["submission"].key) or "https://github.com/org/repo/issues/2",
+    )
+
+    result = submitter.main([
+        "--input", str(input_path),
+        "--repo", "org/repo",
+        "--token", "token",
+        "--limit", "1",
+        "--seen-cache", str(cache_path),
+    ])
+    cache = json.loads(cache_path.read_text(encoding="utf-8"))
+
+    assert result == 0
+    assert created == ["https://arxiv.org/abs/2601.00002"]
+    assert cache["seen"]["https://arxiv.org/abs/2601.00001"]["status"] == "submitted"
+    assert cache["seen"]["https://arxiv.org/abs/2601.00002"]["status"] == "submitted"
+
+
+def test_candidates_beyond_submission_limit_remain_retryable(tmp_path, monkeypatch):
+    candidates = [
+        candidate(
+            title=f"RoboPolicy {index}: Imitation Learning for Robot Manipulation",
+            url=f"https://arxiv.org/abs/2601.0000{index}",
+        )
+        for index in range(1, 4)
+    ]
+    input_path = tmp_path / "candidates.json"
+    input_path.write_text(json.dumps(candidates), encoding="utf-8")
+    cache_path = tmp_path / "seen.json"
+    cache_path.write_text(
+        json.dumps({
+            "version": 2,
+            "seen": {
+                item["url"]: {"status": "retry", "next_check_at": "2026-01-08T00:00:00Z"}
+                for item in candidates
+            },
+        }),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(submitter, "existing_discovery_keys", lambda **_kwargs: set())
+    monkeypatch.setattr(
+        submitter,
+        "create_add_model_issue",
+        lambda **_kwargs: "https://github.com/org/repo/issues/1",
+    )
+
+    submitter.main([
+        "--input", str(input_path),
+        "--repo", "org/repo",
+        "--token", "token",
+        "--limit", "1",
+        "--seen-cache", str(cache_path),
+    ])
+    cache = json.loads(cache_path.read_text(encoding="utf-8"))
+    statuses = [cache["seen"][item["url"]]["status"] for item in candidates]
+
+    assert statuses == ["submitted", "retry", "retry"]

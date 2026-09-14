@@ -19,7 +19,12 @@ from urllib.parse import urlsplit
 
 import requests
 
-from discover_weekly import canonicalize_seen_url
+from discover_weekly import (
+    canonicalize_seen_url,
+    load_seen_cache,
+    mark_seen_submitted,
+    write_seen_cache,
+)
 
 
 GITHUB_API_URL = "https://api.github.com"
@@ -447,6 +452,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--limit", type=int, default=3, help="Maximum Add a Model submissions. Use 0 for no limit.")
     parser.add_argument("--source-run", help="Workflow run URL to include as provenance.")
+    parser.add_argument("--seen-cache", help="Mark created or existing submissions as terminal in this cache.")
     parser.add_argument("--dry-run", action="store_true", help="Render submissions without creating issues.")
     return parser
 
@@ -454,35 +460,49 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     candidates = load_candidates(args.input)
-    submissions, skipped = select_submissions(candidates, limit=args.limit)
+    eligible, skipped = select_submissions(candidates, limit=0)
 
     for title, reasons in skipped:
         print(f"Skipped: {title}: {'; '.join(reasons)}", file=sys.stderr)
 
-    if not submissions:
+    if not eligible:
         print("No PR-ready model candidates selected for submission.")
         return 0
 
-    if not args.dry_run and (not args.repo or not args.token):
+    if args.dry_run:
+        submissions = eligible[:args.limit] if args.limit > 0 else eligible
+        for submission in submissions:
+            body = render_add_model_issue(submission, source_run=args.source_run)
+            print(f"[dry-run] Would submit Add a Model issue: [Model] {submission.name}")
+            print(body)
+        return 0
+
+    if not args.repo or not args.token:
         print(
             "error: --repo/GITHUB_REPOSITORY and DISCOVERY_BOT_TOKEN are required unless --dry-run is used.",
             file=sys.stderr,
         )
         return 2
 
-    existing_keys = existing_discovery_keys(repo=args.repo, token=args.token) if not args.dry_run else set()
+    existing_keys = existing_discovery_keys(repo=args.repo, token=args.token)
+    submitted_keys = {submission.key for submission in eligible if submission.key in existing_keys}
+    submissions = [submission for submission in eligible if submission.key not in existing_keys]
+    if args.limit > 0:
+        submissions = submissions[:args.limit]
+
+    for key in sorted(submitted_keys):
+        print(f"Skipped existing Add a Model submission: {key}")
+
     for submission in submissions:
         body = render_add_model_issue(submission, source_run=args.source_run)
-        if submission.key in existing_keys:
-            print(f"Skipped existing Add a Model submission: {submission.key}")
-            continue
-        if args.dry_run:
-            print(f"[dry-run] Would submit Add a Model issue: [Model] {submission.name}")
-            print(body)
-            continue
         url = create_add_model_issue(repo=args.repo, token=args.token, submission=submission, body=body)
         print(f"Created Add a Model issue (automatic PR trigger): {url}")
-        existing_keys.add(submission.key)
+        submitted_keys.add(submission.key)
+
+    if args.seen_cache and submitted_keys:
+        seen_cache = load_seen_cache(args.seen_cache)
+        mark_seen_submitted(seen_cache, submitted_keys)
+        write_seen_cache(args.seen_cache, seen_cache)
     return 0
 
 

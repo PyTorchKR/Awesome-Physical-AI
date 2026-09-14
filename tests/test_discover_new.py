@@ -241,6 +241,7 @@ def test_fetch_arxiv_cs_ro_uses_submitted_date_range_and_max_results(monkeypatch
         <entry>
           <id>https://arxiv.org/abs/{arxiv_id}v2</id>
           <published>2026-06-24T00:00:00Z</published>
+          <updated>2026-06-25T00:00:00Z</updated>
           <title>Robot Policy {arxiv_id}</title>
           <summary>Robot manipulation paper. https://github.com/example/{arxiv_id}</summary>
           <author><name>Alice</name></author>
@@ -270,6 +271,125 @@ def test_fetch_arxiv_cs_ro_uses_submitted_date_range_and_max_results(monkeypatch
     assert calls[0]["max_results"] == 20
     assert calls[0]["search_query"].startswith("cat:cs.RO AND submittedDate:[")
     assert candidates[0].url == "https://arxiv.org/abs/2601.00001"
+    assert candidates[0].arxiv_version == "v2"
+    assert candidates[0].updated == "2026-06-25T00:00:00Z"
+
+
+def test_fetch_arxiv_cs_ro_rejects_truncated_result_set(monkeypatch):
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom"
+              xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+          <opensearch:totalResults>21</opensearch:totalResults>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(dn, "http_get", lambda *args, **kwargs: Response())
+
+    try:
+        dn.fetch_arxiv_cs_ro(days=7, max_results=20)
+    except dn.ArxivResultLimitError as exc:
+        assert "matched 21 papers" in str(exc)
+    else:
+        raise AssertionError("Expected ArxivResultLimitError")
+
+
+def test_fetch_arxiv_by_ids_requests_latest_versions(monkeypatch):
+    calls = []
+
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom"></feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    def fake_http_get(_url, *, params=None, **_kwargs):
+        calls.append(params)
+        return Response()
+
+    monkeypatch.setattr(dn, "http_get", fake_http_get)
+
+    assert dn.fetch_arxiv_by_ids(["2601.00001", "2601.00002"]) == []
+    assert calls[0]["id_list"] == "2601.00001,2601.00002"
+    assert calls[0]["max_results"] == 2
+
+
+def test_fetch_recent_arxiv_updates_filters_by_updated_date(monkeypatch):
+    calls = []
+
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <id>https://arxiv.org/abs/2601.00001v2</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-02-09T00:00:00Z</updated>
+            <title>Recent revision</title><summary>robot policy</summary>
+          </entry>
+          <entry>
+            <id>https://arxiv.org/abs/2601.00002v1</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-01-01T00:00:00Z</updated>
+            <title>Old paper</title><summary>robot policy</summary>
+          </entry>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    def fake_http_get(_url, *, params=None, **_kwargs):
+        calls.append(params)
+        return Response()
+
+    monkeypatch.setattr(dn, "http_get", fake_http_get)
+    recent = dn.fetch_recent_arxiv_updates(
+        days=7,
+        max_results=3,
+        now=dn.datetime(2026, 2, 10, tzinfo=dn.timezone.utc),
+    )
+
+    assert [candidate.title for candidate in recent] == ["Recent revision"]
+    assert calls[0]["sortBy"] == "lastUpdatedDate"
+
+
+def test_fetch_recent_arxiv_updates_rejects_truncation(monkeypatch):
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <id>https://arxiv.org/abs/2601.00001v2</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-02-09T00:00:00Z</updated>
+            <title>Recent revision</title><summary>robot policy</summary>
+          </entry>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(dn, "http_get", lambda *args, **kwargs: Response())
+
+    try:
+        dn.fetch_recent_arxiv_updates(
+            days=7,
+            max_results=1,
+            now=dn.datetime(2026, 2, 10, tzinfo=dn.timezone.utc),
+        )
+    except dn.ArxivResultLimitError as exc:
+        assert "at least 1 cs.RO papers" in str(exc)
+    else:
+        raise AssertionError("Expected ArxivResultLimitError")
 
 
 def test_evaluate_candidates_runs_llm_review_command(monkeypatch):
