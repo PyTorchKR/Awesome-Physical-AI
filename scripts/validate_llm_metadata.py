@@ -262,7 +262,7 @@ class EvidenceFetcher:
         )
         for index, heading in enumerate(headings):
             title = sanitize_text(heading.group(2))
-            title = re.sub(r"^\d+(?:\.\d+)*\s*", "", title).strip().lower()
+            title = re.sub(r"^(?:\d+(?:\.\d+)*|[IVXLC]+\b)\.?\s*", "", title).strip().lower()
             if title not in {"introduction", "intro"}:
                 continue
             end = headings[index + 1].start() if index + 1 < len(headings) else len(html)

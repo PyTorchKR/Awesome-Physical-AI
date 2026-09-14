@@ -383,4 +383,17 @@ def test_extract_introduction_returns_first_introduction_section():
     introduction = vlm.EvidenceFetcher.extract_introduction(html)
 
     assert introduction == "This paper introduces a policy for robot manipulation."
+
+
+def test_extract_introduction_accepts_roman_numeral_section_number():
+    html = """
+    <h2>I Introduction</h2>
+    <p>This paper introduces a policy for robot manipulation.</p>
+    <h2>II Method</h2>
+    <p>Method details.</p>
+    """
+
+    introduction = vlm.EvidenceFetcher.extract_introduction(html)
+
+    assert introduction == "This paper introduces a policy for robot manipulation."
     

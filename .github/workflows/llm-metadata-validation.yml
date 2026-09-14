@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      issues: read
       pull-requests: write
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -77,11 +78,22 @@ jobs:
             const fs = require("fs");
             const marker = "<!-- llm-metadata-validation-comment -->";
             const summary = fs.readFileSync("reports/llm_validation_summary.md", "utf8");
-            const prAuthor = context.payload.pull_request.user.login;
-            const body = `${marker}\n@${prAuthor}\n\n${summary}`;
-
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
+            const pr = context.payload.pull_request;
+            let mention = pr.user.login;
+
+            const issueMatch = pr.body?.match(/Resolves #(\d+)/);
+            if (issueMatch) {
+              const issue = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: Number(issueMatch[1]),
+              });
+              mention = issue.data.user.login;
+            }
+
+            const body = `${marker}\n@${mention}\n\n${summary}`;
 
             const comments = await github.paginate(
               github.rest.issues.listComments,
