@@ -1,0 +1,169 @@
+name: Weekly discovery
+
+on:
+  schedule:
+    # Run every Sunday at 03:00 UTC.
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      submit_models:
+        description: "Submit PR-ready candidates through the Add a Model flow"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      max_submissions:
+        description: "Maximum number of Add a Model submissions"
+        required: true
+        default: "3"
+      llm_review_mode:
+        description: "Optional LLM review mode for manual runs"
+        required: true
+        default: "off"
+        type: choice
+        options:
+          - "off"
+          - "ambiguous"
+          - "all"
+      llm_provider:
+        description: "LLM reviewer provider for manual runs"
+        required: true
+        default: "openrouter"
+        type: choice
+        options:
+          - "openrouter"
+          - "gemini"
+      llm_model:
+        description: "Optional provider model ID; leave empty to use the provider default"
+        required: false
+        default: ""
+      max_ambiguous:
+        description: "Maximum ambiguous candidates to send to optional LLM review"
+        required: true
+        default: "5"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install optional Gemini reviewer dependency
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_review_mode != 'off' && inputs.llm_provider == 'gemini' }}
+        run: pip install -U google-genai
+
+      - name: Restore seen cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/discover_seen.json
+          key: discover-seen-cache-${{ github.run_id }}
+          restore-keys: |
+            discover-seen-cache-
+
+      - name: Run discovery
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          DISCOVERY_BOT_TOKEN: ${{ secrets.DISCOVERY_BOT_TOKEN }}
+          # Used only for authenticated public-repository link verification.
+          GITHUB_TOKEN: ${{ github.token }}
+          SUBMIT_MODE: ${{ github.event_name == 'schedule' || inputs.submit_models == 'true' }}
+          LLM_REVIEW_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_review_mode || 'off' }}
+          LLM_PROVIDER: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_provider || 'openrouter' }}
+          LLM_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_model || '' }}
+          MAX_AMBIGUOUS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_ambiguous || '5' }}
+        run: |
+          mkdir -p .cache
+          ARGS=(
+            --days 7
+            # 30 completed weeks ending 2026-09-12: median=257, p95=360,
+            # max=375. 500 leaves 33% headroom above the observed maximum.
+            --max-arxiv 500
+            --max-rechecks 50
+            --seen-cache .cache/discover_seen.json
+            --format json
+            --output discovery_candidates.json
+            --llm-review-mode "$LLM_REVIEW_MODE"
+            --max-ambiguous "$MAX_AMBIGUOUS"
+          )
+
+          if [ "$LLM_REVIEW_MODE" != "off" ]; then
+            if [ "$LLM_PROVIDER" = "openrouter" ]; then
+              if [ -z "$OPENROUTER_API_KEY" ]; then
+                echo "OPENROUTER_API_KEY secret is required when llm_provider=openrouter and llm_review_mode is not off." >&2
+                exit 1
+              fi
+            elif [ "$LLM_PROVIDER" = "gemini" ]; then
+              if [ -z "$GEMINI_API_KEY" ]; then
+                echo "GEMINI_API_KEY secret is required when llm_provider=gemini and llm_review_mode is not off." >&2
+                exit 1
+              fi
+            else
+              echo "Unsupported LLM_PROVIDER: $LLM_PROVIDER" >&2
+              exit 1
+            fi
+            ARGS+=(--llm-review-command "python scripts/llm_reviewer.py")
+          fi
+
+          if [ "$SUBMIT_MODE" != "true" ]; then
+            echo "Manual report-only run; seen-cache will not be updated."
+            ARGS+=(--no-update-seen-cache)
+          elif [ -z "$DISCOVERY_BOT_TOKEN" ]; then
+            echo "::warning::DISCOVERY_BOT_TOKEN is not configured; candidates will not be cached so a later run can retry submission."
+            ARGS+=(--no-update-seen-cache)
+          fi
+
+          python scripts/discover_weekly.py "${ARGS[@]}"
+
+      - name: Upload discovery report
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-candidates
+          path: |
+            discovery_candidates.json
+            .cache/discover_seen.json
+
+      - name: Submit PR-ready models through Add a Model
+        if: ${{ github.event_name == 'schedule' || inputs.submit_models == 'true' }}
+        env:
+          # A normal GITHUB_TOKEN cannot trigger process-issue.yml from a created
+          # issue. Use a fine-grained PAT or GitHub App token with issues:write.
+          DISCOVERY_BOT_TOKEN: ${{ secrets.DISCOVERY_BOT_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MAX_SUBMISSIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submissions || '3' }}
+          SOURCE_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCOVERY_BOT_TOKEN" ]; then
+            echo "::warning::Skipping Add a Model submission because DISCOVERY_BOT_TOKEN is not configured."
+            echo "::warning::Do not replace it with GITHUB_TOKEN; GitHub suppresses workflow runs caused by GITHUB_TOKEN events."
+            exit 0
+          fi
+
+          python scripts/discovery_model_submitter.py \
+            --input discovery_candidates.json \
+            --limit "$MAX_SUBMISSIONS" \
+            --seen-cache .cache/discover_seen.json \
+            --source-run "$SOURCE_RUN"
+
+      - name: Save seen cache
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/discover_seen.json
+          key: discover-seen-cache-${{ github.run_id }}
