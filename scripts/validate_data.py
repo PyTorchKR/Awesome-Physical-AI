@@ -43,6 +43,15 @@ VALID_MODALITY = {
     "proprioception", "audio", "force_torque",
 }
 
+BENCHMARK_META = {
+    "LIBERO_Spatial": {"metric": "success_rate",     "scale": [0, 1]},
+    "LIBERO_Object":  {"metric": "success_rate",     "scale": [0, 1]},
+    "LIBERO_Goal":    {"metric": "success_rate",     "scale": [0, 1]},
+    "LIBERO_Long":    {"metric": "success_rate",     "scale": [0, 1]},
+    "SimplerEnv_VM":  {"metric": "success_rate",     "scale": [0, 1]},
+    "CALVIN_ACL":     {"metric": "avg_chain_length", "scale": [0, 5]},
+}
+
 REQUIRED_MODEL_KEYS = {
     "id", "name", "org", "year", "description_en", "description_ko",
     "categories", "hardware", "learning", "framework", "added_date",
@@ -66,6 +75,36 @@ def check_list_values(entry_id: str, field: str, values: list, valid_set: set) -
             err(f"[{entry_id}] '{field}' has unknown value '{v}' (valid: {sorted(valid_set)})")
 
 
+def check_benchmarks(model: dict) -> None:
+    if "benchmarks" not in model:
+        return
+
+    entry_id = model.get("id", "<no-id>")
+    benchmarks = model["benchmarks"]
+    if not isinstance(benchmarks, dict):
+        err(f"[{entry_id}] 'benchmarks' must be a mapping")
+        return
+
+    for key, value in benchmarks.items():
+        if key not in BENCHMARK_META:
+            err(
+                f"[{entry_id}] 'benchmarks' has unknown key '{key}' "
+                f"(valid: {sorted(BENCHMARK_META)})"
+            )
+            continue
+
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            err(f"[{entry_id}] benchmark '{key}' must be a number")
+            continue
+
+        scale = BENCHMARK_META[key]["scale"]
+        if not scale[0] <= value <= scale[1]:
+            err(
+                f"[{entry_id}] benchmark '{key}' value {value} is outside "
+                f"allowed range {scale}"
+            )
+
+
 def validate_model(entry: dict) -> None:
     entry_id = entry.get("id", "<no-id>")
     print(f"  Checking model: {entry_id}")
@@ -86,6 +125,7 @@ def validate_model(entry: dict) -> None:
     check_list_values(entry_id, "learning", entry.get("learning", []), VALID_LEARNING)
     check_list_values(entry_id, "framework", entry.get("framework", []), VALID_FRAMEWORK)
     check_list_values(entry_id, "communication", entry.get("communication", []), VALID_COMMUNICATION)
+    check_benchmarks(entry)
 
     # At least one URL
     urls = [entry.get("github_url"), entry.get("paper_url"), entry.get("hf_url")]
