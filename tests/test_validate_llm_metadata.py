@@ -61,6 +61,7 @@ def test_validate_entry_pass_case():
             "test-entry": vlm.EvidenceBundle(
                 readme_text="README says the project uses PyTorch for manipulation.",
                 abstract_text="The paper studies manipulation with an imitation learning policy.",
+                introduction_text="The introduction explains the paper's manipulation setting.",
             )
         }
     )
@@ -80,7 +81,7 @@ def test_validate_entry_pass_case():
     result = vlm.validate_entry("model", _entry(), fetcher, validator)
 
     assert result.final_verdict == "pass"
-    assert result.evidence_sources == ["README", "Abstract"]
+    assert result.evidence_sources == ["README", "Abstract", "Introduction"]
 
 
 def test_validate_entry_invalid_tag_case():
@@ -293,6 +294,41 @@ def test_main_skips_without_api_key(monkeypatch):
     shutil.rmtree(tmp_dir)
 
 
+def test_evidence_printing_is_enabled_by_default():
+    assert vlm.parse_args([]).print_evidence is True
+    assert vlm.parse_args(["--no-print-evidence"]).print_evidence is False
+
+
+def test_evidence_citations_are_normalized_and_printed_only(capsys):
+    assert "evidence_citations" in vlm.VALIDATION_SCHEMA["required"]
+
+    result = vlm.normalize_validation_result(
+        {
+            "tag_score": 1.0,
+            "summary_score": 0.3,
+            "final_verdict": "fail",
+            "reason": "요약의 수치가 근거와 다릅니다.",
+            "unsupported_tags": [],
+            "unsupported_claims": ["130만 개 시연"],
+            "evidence_citations": [
+                {
+                    "claim": "130만 개 시연",
+                    "source": "Introduction",
+                    "quote": "containing ~ 130k episodes",
+                    "relation": "contradicts",
+                }
+            ],
+        }
+    )
+
+    vlm.print_evidence_citations("test-entry", result["evidence_citations"])
+    output = capsys.readouterr().out
+
+    assert "containing ~ 130k episodes" in output
+    assert "Introduction" in output
+    assert "evidence_citations" not in vlm.build_report([])
+
+
 def test_render_actions_summary_contains_table():
     report = {
         "status": "completed",
@@ -306,7 +342,7 @@ def test_render_actions_summary_contains_table():
                 "tag_score": 0.7,
                 "summary_score": 0.6,
                 "unsupported_tags": ["rl"],
-                "unsupported_claims": [],
+                "unsupported_claims": ["지원 범위가 과장되어 있습니다"],
                 "evidence_issues": ["Abstract evidence unavailable"],
                 "reason": "Need more evidence",
             }
@@ -318,18 +354,69 @@ def test_render_actions_summary_contains_table():
     assert "| Entry | Type | Verdict |" in summary
     assert "foo" in summary
     assert "reason: Need more evidence" in summary
-    assert "unsupported tags: rl" in summary
+    assert "수정 필요 태그: rl" in summary
+    assert "수정 필요 문구: 지원 범위가 과장되어 있습니다" in summary
 
 
-def test_build_prompt_contains_readable_korean_instructions():
+def test_specificity_score_is_preserved():
+    result = vlm.normalize_validation_result(
+        {
+            "tag_score": 1.0,
+            "summary_score": 1.0,
+            "summary_specificity_score": 0.25,
+            "final_verdict": "warning",
+            "reason": "요약이 사실과 일치하지만 모델 고유의 핵심 아이디어가 드러나지 않습니다.",
+            "unsupported_tags": [],
+            "unsupported_claims": [],
+        }
+    )
+
+    assert result["summary_specificity_score"] == 0.25
+    assert result["summary_specificity_score"] == 0.25
+
+
+def test_build_prompt_includes_specificity_review_instructions():
     prompt = vlm.build_prompt(
         "model",
         _entry(description_ko="조작 정책 요약입니다."),
-        vlm.EvidenceBundle(readme_text="README evidence", abstract_text="Abstract evidence"),
+        vlm.EvidenceBundle(
+            readme_text="README evidence",
+            abstract_text="Abstract evidence",
+            introduction_text="Introduction evidence",
+        ),
     )
 
-    assert "메타데이터를 검증하는 엄격한 검수자입니다." in prompt
-    assert "reason은 반드시 한국어로 작성하세요." in prompt
-    assert "README evidence:" in prompt
-    assert "Abstract evidence:" in prompt
+    assert "사실과 일치해도 지나치게 일반적일 수 있습니다." in prompt
+    assert "reason에 포함하세요" in prompt
+    assert "의도 우회(shortcut)를 차단" in prompt
+    assert "README 근거:" in prompt
+    assert "Abstract 근거:" in prompt
+    assert "Introduction 근거:" in prompt
+    assert "Introduction evidence" in prompt
+
+
+def test_extract_introduction_returns_first_introduction_section():
+    html = """
+    <h2><span>1 </span>Introduction</h2>
+    <p>This paper introduces a policy for robot manipulation.</p>
+    <h2>2 Method</h2>
+    <p>Method details.</p>
+    """
+
+    introduction = vlm.EvidenceFetcher.extract_introduction(html)
+
+    assert introduction == "This paper introduces a policy for robot manipulation."
+
+
+def test_extract_introduction_accepts_roman_numeral_section_number():
+    html = """
+    <h2>I Introduction</h2>
+    <p>This paper introduces a policy for robot manipulation.</p>
+    <h2>II Method</h2>
+    <p>Method details.</p>
+    """
+
+    introduction = vlm.EvidenceFetcher.extract_introduction(html)
+
+    assert introduction == "This paper introduces a policy for robot manipulation."
     
