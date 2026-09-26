@@ -294,6 +294,41 @@ def test_main_skips_without_api_key(monkeypatch):
     shutil.rmtree(tmp_dir)
 
 
+def test_evidence_printing_is_enabled_by_default():
+    assert vlm.parse_args([]).print_evidence is True
+    assert vlm.parse_args(["--no-print-evidence"]).print_evidence is False
+
+
+def test_evidence_citations_are_normalized_and_printed_only(capsys):
+    assert "evidence_citations" in vlm.VALIDATION_SCHEMA["required"]
+
+    result = vlm.normalize_validation_result(
+        {
+            "tag_score": 1.0,
+            "summary_score": 0.3,
+            "final_verdict": "fail",
+            "reason": "요약의 수치가 근거와 다릅니다.",
+            "unsupported_tags": [],
+            "unsupported_claims": ["130만 개 시연"],
+            "evidence_citations": [
+                {
+                    "claim": "130만 개 시연",
+                    "source": "Introduction",
+                    "quote": "containing ~ 130k episodes",
+                    "relation": "contradicts",
+                }
+            ],
+        }
+    )
+
+    vlm.print_evidence_citations("test-entry", result["evidence_citations"])
+    output = capsys.readouterr().out
+
+    assert "containing ~ 130k episodes" in output
+    assert "Introduction" in output
+    assert "evidence_citations" not in vlm.build_report([])
+
+
 def test_render_actions_summary_contains_table():
     report = {
         "status": "completed",
@@ -323,7 +358,7 @@ def test_render_actions_summary_contains_table():
     assert "수정 필요 문구: 지원 범위가 과장되어 있습니다" in summary
 
 
-def test_generic_but_factually_correct_summary_is_reported():
+def test_specificity_score_is_preserved():
     result = vlm.normalize_validation_result(
         {
             "tag_score": 1.0,
@@ -333,23 +368,11 @@ def test_generic_but_factually_correct_summary_is_reported():
             "reason": "요약이 사실과 일치하지만 모델 고유의 핵심 아이디어가 드러나지 않습니다.",
             "unsupported_tags": [],
             "unsupported_claims": [],
-            "generic_summary_issues": [
-                "의도 우회 방지를 위한 잠재 병목 설계가 빠져 있습니다."
-            ],
         }
     )
 
-    report = {
-        "status": "completed",
-        "skipped_reason": None,
-        "counts": {"pass": 0, "warning": 1, "fail": 0},
-        "results": [{"entry_id": "dial", "entry_type": "model", **result, "evidence_issues": []}],
-    }
-
-    summary = vlm.render_actions_summary(report)
-
     assert result["summary_specificity_score"] == 0.25
-    assert "Specificity" in summary
+    assert result["summary_specificity_score"] == 0.25
 
 
 def test_build_prompt_includes_specificity_review_instructions():
@@ -364,7 +387,7 @@ def test_build_prompt_includes_specificity_review_instructions():
     )
 
     assert "사실과 일치해도 지나치게 일반적일 수 있습니다." in prompt
-    assert "generic_summary_issues" in prompt
+    assert "reason에 포함하세요" in prompt
     assert "의도 우회(shortcut)를 차단" in prompt
     assert "README 근거:" in prompt
     assert "Abstract 근거:" in prompt
