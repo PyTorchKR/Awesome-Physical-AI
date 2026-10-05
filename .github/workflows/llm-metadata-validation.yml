@@ -11,6 +11,11 @@ on:
 
 jobs:
   validate-llm-metadata:
+    # Weekly stats PRs (weekly-update.yml) only refresh stars/forks/downloads on
+    # every entry; tags and summaries are untouched, so there is nothing for the
+    # LLM to re-validate. head_ref is empty on workflow_dispatch, so manual runs
+    # are unaffected.
+    if: ${{ !startsWith(github.head_ref, 'chore/weekly-stats-') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
