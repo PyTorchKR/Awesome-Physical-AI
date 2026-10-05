@@ -12,27 +12,33 @@
       "name": "LeRobot",
       "org": "Hugging Face",
       "year": 2024,
-      "description_en": "End-to-end learning for real-world robotics. Provides datasets, pretrained models, and training code for manipulation tasks.",
-      "description_ko": "실제 로봇을 위한 엔드-투-엔드 학습 프레임워크. 조작 태스크를 위한 데이터셋, 사전학습 모델, 학습 코드를 제공합니다.",
+      "description_en": "An open-source PyTorch library from Hugging Face that integrates the whole robot learning stack, from a unified hardware API (SO-100 arms to humanoids) and the LeRobotDataset format to an asynchronous inference stack. It also provides IL, RL and VLA policy implementations (e.g., ACT, Pi0, SmolVLA) with pretrained models.",
+      "description_ko": "통합 하드웨어 API(SO-100 팔~휴머노이드), LeRobotDataset 포맷, 비동기 추론 스택까지 로봇 학습 스택 전체를 통합한 Hugging Face의 오픈소스 PyTorch 라이브러리. ACT, Pi0, SmolVLA 등 모방학습·강화학습·VLA 정책 구현과 사전학습 모델을 제공합니다.",
       "github_url": "https://github.com/huggingface/lerobot",
-      "paper_url": "https://arxiv.org/abs/2408.01730",
+      "paper_url": "https://arxiv.org/abs/2602.22818",
       "hf_url": "https://huggingface.co/lerobot",
-      "project_url": "",
+      "project_url": "https://huggingface.co/docs/lerobot",
       "categories": [
         "manipulation"
       ],
       "hardware": [
-        "manipulator"
+        "manipulator",
+        "humanoid",
+        "mobile"
       ],
       "learning": [
+        "VLA",
         "IL",
+        "RL",
         "diffusion",
-        "VLA"
+        "world_model"
       ],
       "framework": [
         "pytorch"
       ],
-      "communication": [],
+      "communication": [
+        "grpc"
+      ],
       "stats": {
         "github_stars": 27928,
         "github_forks": 5803,
@@ -41,9 +47,13 @@
       },
       "added_date": "2024-06-01",
       "tags": [
+        "robot-learning-library",
+        "lerobot-dataset",
         "imitation-learning",
-        "diffusion-policy",
-        "act"
+        "reinforcement-learning",
+        "async-inference",
+        "low-cost-hardware",
+        "huggingface-hub"
       ]
     },
     {
