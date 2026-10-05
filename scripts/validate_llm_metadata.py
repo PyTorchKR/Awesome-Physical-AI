@@ -2,13 +2,13 @@
 """
 LLM-based validation for submitted tags and summaries.
 
-This script compares repository metadata against README and paper abstract
-evidence, asks Gemini for a structured JSON verdict, then writes a report
+This script compares repository metadata against README, paper abstract, and
+paper introduction evidence, asks Gemini for a structured JSON verdict, then writes a report
 consumable by pytest and GitHub Actions.
 
 Usage:
   python scripts/validate_llm_metadata.py
-  python scripts/validate_llm_metadata.py --output reports/llm.json
+  python scripts/validate_llm_metadata.py --no-print-evidence
 """
 
 from __future__ import annotations
@@ -50,18 +50,34 @@ VALIDATION_SCHEMA: dict[str, Any] = {
     "properties": {
         "tag_score": {"type": "NUMBER"},
         "summary_score": {"type": "NUMBER"},
+        "summary_specificity_score": {"type": "NUMBER"},
         "final_verdict": {"type": "STRING", "enum": ["pass", "warning", "fail"]},
         "reason": {"type": "STRING"},
         "unsupported_tags": {"type": "ARRAY", "items": {"type": "STRING"}},
         "unsupported_claims": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "evidence_citations": {
+            "type": "ARRAY",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "claim": {"type": "STRING"},
+                    "source": {"type": "STRING", "enum": ["README", "Abstract", "Introduction"]},
+                    "quote": {"type": "STRING"},
+                    "relation": {"type": "STRING", "enum": ["supports", "contradicts"]},
+                },
+                "required": ["claim", "source", "quote", "relation"],
+            },
+        },
     },
     "required": [
         "tag_score",
         "summary_score",
+        "summary_specificity_score",
         "final_verdict",
         "reason",
         "unsupported_tags",
         "unsupported_claims",
+        "evidence_citations",
     ],
 }
 
@@ -70,6 +86,7 @@ VALIDATION_SCHEMA: dict[str, Any] = {
 class EvidenceBundle:
     readme_text: str = ""
     abstract_text: str = ""
+    introduction_text: str = ""
     issues: list[str] = field(default_factory=list)
 
 
@@ -89,6 +106,7 @@ class ValidationResult:
     unsupported_claims: list[str]
     evidence_sources: list[str]
     evidence_issues: list[str]
+    summary_specificity_score: float = 0.0
 
 
 def load_yaml(path: Path) -> list[dict[str, Any]]:
@@ -162,11 +180,17 @@ class EvidenceFetcher:
                 bundle.abstract_text = self.fetch_paper_abstract(paper_url)
             except Exception as exc:  # pragma: no cover - network behavior
                 bundle.issues.append(f"Abstract fetch failed: {exc}")
+            try:
+                bundle.introduction_text = self.fetch_paper_introduction(paper_url)
+            except Exception as exc:  # pragma: no cover - network behavior
+                bundle.issues.append(f"Introduction fetch failed: {exc}")
         else:
             bundle.issues.append("Abstract evidence unavailable: missing paper_url")
+            bundle.issues.append("Introduction evidence unavailable: missing paper_url")
 
         bundle.readme_text = truncate_text(bundle.readme_text)
         bundle.abstract_text = truncate_text(bundle.abstract_text)
+        bundle.introduction_text = truncate_text(bundle.introduction_text)
         return bundle
 
     def fetch_github_readme(self, owner: str, repo: str) -> str:
@@ -193,6 +217,18 @@ class EvidenceFetcher:
         response.raise_for_status()
         return response.text
 
+    def fetch_paper_introduction(self, paper_url: str) -> str:
+        """Fetch the paper's Introduction section for evidence-bound review."""
+        if "arxiv.org" in paper_url:
+            return self.fetch_arxiv_introduction(paper_url)
+        response = self.session.get(
+            paper_url,
+            headers={"User-Agent": "awesome-physical-ai-validator"},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        return self.extract_introduction(response.text)
+
     def fetch_arxiv_abstract(self, paper_url: str) -> str:
         response = self.session.get(
             paper_url,
@@ -215,6 +251,36 @@ class EvidenceFetcher:
         if not match:
             raise ValueError("could not find abstract in paper page")
         return sanitize_text(match.group(1))
+
+    def fetch_arxiv_introduction(self, paper_url: str) -> str:
+        match = re.search(r"arxiv\.org/(?:abs|html|pdf)/([^?#]+)", paper_url)
+        if not match:
+            raise ValueError("could not determine arXiv paper identifier")
+        paper_id = match.group(1).removesuffix(".pdf")
+        response = self.session.get(
+            f"https://arxiv.org/html/{paper_id}",
+            headers={"User-Agent": "awesome-physical-ai-validator"},
+            timeout=REQUEST_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        return self.extract_introduction(response.text)
+
+    @staticmethod
+    def extract_introduction(html: str) -> str:
+        """Extract text from the first HTML heading named Introduction."""
+        headings = list(
+            re.finditer(r"<h([1-6])[^>]*>(.*?)</h\1>", html, flags=re.IGNORECASE | re.DOTALL)
+        )
+        for index, heading in enumerate(headings):
+            title = sanitize_text(heading.group(2))
+            title = re.sub(r"^(?:\d+(?:\.\d+)*|[IVXLC]+\b)\.?\s*", "", title).strip().lower()
+            if title not in {"introduction", "intro"}:
+                continue
+            end = headings[index + 1].start() if index + 1 < len(headings) else len(html)
+            introduction = sanitize_text(html[heading.end() : end])
+            if introduction:
+                return introduction
+        raise ValueError("could not find Introduction section in paper page")
 
 
 class GeminiValidator:
@@ -342,17 +408,34 @@ def extract_gemini_text(payload: dict[str, Any]) -> str:
 
 
 def normalize_validation_result(result: dict[str, Any]) -> dict[str, Any]:
-    missing = [key for key in VALIDATION_SCHEMA["required"] if key not in result]
+    missing = [
+        key
+        for key in VALIDATION_SCHEMA["required"]
+        if key not in result and key not in {"summary_specificity_score", "evidence_citations"}
+    ]
     if missing:
         raise ValueError(f"Gemini JSON missing required keys: {missing}")
 
     normalized = {
         "tag_score": clamp_score(result["tag_score"]),
         "summary_score": clamp_score(result["summary_score"]),
+        "summary_specificity_score": clamp_score(
+            result.get("summary_specificity_score", result["summary_score"])
+        ),
         "final_verdict": str(result["final_verdict"]).lower(),
         "reason": str(result["reason"]).strip(),
         "unsupported_tags": [str(item) for item in result["unsupported_tags"]],
         "unsupported_claims": [str(item) for item in result["unsupported_claims"]],
+        "evidence_citations": [
+            {
+                "claim": str(item.get("claim", "")).strip(),
+                "source": str(item.get("source", "")).strip(),
+                "quote": str(item.get("quote", "")).strip(),
+                "relation": str(item.get("relation", "")).strip(),
+            }
+            for item in result.get("evidence_citations", [])
+            if isinstance(item, dict)
+        ],
     }
 
     if normalized["final_verdict"] not in VALID_VERDICTS:
@@ -378,48 +461,64 @@ def clamp_score(value: Any) -> float:
 
 
 def build_prompt(entry_type: str, entry: dict[str, Any], evidence: EvidenceBundle) -> str:
+    """Build the evidence-bound review prompt for Gemini."""
     return f"""
 당신은 Awesome Physical AI 저장소에 등록된 항목의 메타데이터를 검증하는 엄격한 검수자입니다.
 
-검증 목표:
-사용자가 제출한 태그, 영어 요약문, 한국어 요약문이 GitHub README 및 논문 Abstract 근거에 비추어 적절한지 판단하세요.
+제출된 태그와 영어/한국어 요약문을 제공된 GitHub README, 논문 Abstract, 논문 Introduction 근거만으로 검증하세요. 일반 지식이나 추측은 사용하지 마세요.
 
-반드시 지켜야 할 기준:
-1. 제공된 README evidence와 Abstract evidence만 근거로 사용하세요.
-2. 외부 지식이나 일반적인 추측을 사용하지 마세요.
-3. 태그가 그럴듯해 보여도 README 또는 Abstract에서 뒷받침되지 않으면 unsupported_tags에 포함하세요.
-4. 영어/한국어 요약문에 README 또는 Abstract에서 확인되지 않는 주장, 과장된 표현, 잘못된 적용 분야, 잘못된 성능 주장, 잘못된 모델 설명이 있으면 unsupported_claims에 포함하세요.
-5. README는 구현 방식, 프레임워크, 설치/사용법, 코드 기반 기능을 판단할 때 우선 근거로 사용하세요.
-6. 논문 Abstract는 연구 목적, 핵심 기여, 적용 도메인, 제안 방법, 실험 대상 등을 판단할 때 우선 근거로 사용하세요.
-7. README 또는 Abstract가 누락되었거나 근거가 약한 경우, 명확히 틀린 주장이 아니라면 fail보다 warning을 우선 사용하세요.
-8. 명확히 근거와 모순되는 태그나 요약문 주장이 있으면 fail을 사용할 수 있습니다.
-9. tag_score와 summary_score는 0.0 이상 1.0 이하의 숫자로 작성하세요.
-10. final_verdict는 반드시 pass, warning, fail 중 하나만 사용하세요.
-11. reason은 반드시 한국어로 작성하세요.
-12. 응답은 설명 문장 없이 JSON만 반환하세요.
+검증 기준:
+1. 근거로 뒷받침되지 않는 태그는 모두 unsupported_tags에 넣으세요.
+2. 근거가 없거나 부정확·과장된 요약문 주장은 모두 unsupported_claims에 넣으세요.
+3. 사실 여부와 별도로, 각 요약문이 이 항목만의 고유한 핵심 기여를 설명하는지 판단하세요. 사실과 일치해도 지나치게 일반적일 수 있습니다.
+4. 넓은 분야, 일반적인 아키텍처·학습 방식·성능/기능만 말하고 이 항목의 제안 메커니즘, 설계 선택, 데이터셋 구성, 벤치마크/프로토콜 또는 구별되는 기여를 빠뜨리면 일반적인 요약문으로 판단하세요.
+5. 짧다는 이유만으로 일반적이라고 판단하지 마세요. 근거에 기반한 고유 핵심 메서드나 아이디어를 하나 이상 명확히 설명하고, 관련 있다면 그것이 문제를 어떻게 해결하는지 드러나면 충분히 구체적입니다.
+6. 일반적인 요약문이면, 사실 오류가 없더라도 빠진 고유 기여가 무엇인지 한국어로 간결하게 reason에 포함하세요.
+7. summary_specificity_score는 0.0~1.0입니다. 1.0은 핵심 기여가 명확히 드러나는 경우, 0.5는 일부만 드러나는 경우, 0.0은 다른 많은 프로젝트와 거의 구별되지 않는 경우입니다.
+8. 사실과 일치하지만 일반적인 요약문은 보통 warning으로 판정하세요. 근거와 모순되거나 핵심 내용이 틀린 경우에 fail을 사용하세요.
+9. 태그와 주장이 근거에 부합하고 요약문이 충분히 고유할 때만 pass를 사용하세요. reason은 반드시 한국어로 작성하세요.
+10. README, Abstract, Introduction 중 하나라도 제공되었으면 evidence_citations를 절대 빈 배열로 반환하지 마세요. unsupported_claims의 각 항목과 최종 판정의 핵심 근거에 대해 evidence_citations를 작성하세요. quote에는 제공된 README, Abstract, Introduction에서 찾은 연속된 문장을 바꾸지 말고 그대로 넣고, source와 그 문장이 주장을 지지하는지( supports ) 또는 반박하는지( contradicts )를 표시하세요. 근거 문장이 없으면 인용을 만들지 마세요.
+11. 설명 문장 없이 아래 스키마에 맞는 JSON만 반환하세요.
 
-판정 기준:
-- pass: 태그와 요약문이 README 및 Abstract 근거로 충분히 뒷받침됨
-- warning: 근거가 부족하거나 일부 태그/주장이 약하게만 뒷받침됨
-- fail: 태그 또는 요약문이 근거와 명확히 모순되거나 핵심 내용이 잘못됨
+판단 예시:
+- 일반적인 요약문: "이중 시스템 VLA 구조에서 고수준 의도와 저수준 행동을 분리하고, VLM과 flow-matching 기반 정책을 사용한다." 이 설명은 사실일 수 있지만 많은 VLA 프로젝트에 적용될 수 있으므로, 해당 항목만의 기여를 보여 주지 못하면 warning으로 판정하고 누락된 고유 기여를 reason에 적으세요.
+- 고유한 요약문: "행동이 잠재 의도를 반드시 통과하도록 병목을 설계해 기존 이중 시스템 VLA의 의도 우회(shortcut)를 차단하고, 행동 그래디언트가 VLM을 정교화하도록 한다." 이처럼 제안한 구조적 장치와 해결하려는 문제를 근거에 맞게 설명하면 충분히 구체적입니다.
+- 위 예시는 판단 방식만 보여 주며, 실제 항목을 검증할 때는 반드시 해당 항목에 제공된 README, Abstract, Introduction 근거만 사용하세요.
 
-반환해야 하는 JSON 스키마:
+반환 JSON 스키마:
 {json.dumps(VALIDATION_SCHEMA, ensure_ascii=False)}
 
-검증 항목 정보:
-- Entry type: {entry_type}
-- Entry id: {entry.get("id", "")}
-- Entry name: {entry.get("name", "")}
-- Submitted tags: {json.dumps(entry.get("tags", []), ensure_ascii=False)}
-- Submitted English summary: {entry.get("description_en", "")}
-- Submitted Korean summary: {entry.get("description_ko", "")}
+검증 항목:
+- 항목 유형: {entry_type}
+- 항목 ID: {entry.get("id", "")}
+- 항목명: {entry.get("name", "")}
+- 제출 태그: {json.dumps(entry.get("tags", []), ensure_ascii=False)}
+- 제출 영어 요약문: {entry.get("description_en", "")}
+- 제출 한국어 요약문: {entry.get("description_ko", "")}
 
-README evidence:
+README 근거:
 {evidence.readme_text or "(missing)"}
 
-Abstract evidence:
+Abstract 근거:
 {evidence.abstract_text or "(missing)"}
+
+Introduction 근거:
+{evidence.introduction_text or "(missing)"}
 """.strip()
+
+
+def print_evidence_citations(entry_id: str, citations: list[dict[str, str]]) -> None:
+    """Print LLM-selected verbatim citations without adding them to the JSON report."""
+    print(f"\n=== LLM cited evidence for {entry_id} ===")
+    if not citations:
+        print("(No exact citations returned.)")
+    for citation in citations:
+        print(
+            f"\n[{citation['relation']}] {citation['claim']}\n"
+            f"Source: {citation['source']}\n"
+            f"Quote: {citation['quote']}"
+        )
+    print("\n=== End cited evidence ===\n")
 
 
 def validate_entry(
@@ -427,6 +526,7 @@ def validate_entry(
     entry: dict[str, Any],
     fetcher: EvidenceFetcher,
     validator: GeminiValidator | MockGeminiValidator,
+    print_evidence: bool = False,
 ) -> ValidationResult:
     evidence = fetcher.fetch(entry)
     evidence_sources: list[str] = []
@@ -434,6 +534,8 @@ def validate_entry(
         evidence_sources.append("README")
     if evidence.abstract_text:
         evidence_sources.append("Abstract")
+    if evidence.introduction_text:
+        evidence_sources.append("Introduction")
 
     try:
         llm_result = validator.validate(entry_type, entry, evidence)
@@ -453,6 +555,7 @@ def validate_entry(
             summary_ko=entry.get("description_ko", ""),
             tag_score=0.0,
             summary_score=0.0,
+            summary_specificity_score=0.0,
             final_verdict="warning",
             reason=warning_reason,
             unsupported_tags=[],
@@ -460,6 +563,9 @@ def validate_entry(
             evidence_sources=evidence_sources,
             evidence_issues=issues,
         )
+
+    if print_evidence:
+        print_evidence_citations(entry.get("id", ""), llm_result["evidence_citations"])
 
     return ValidationResult(
         entry_id=entry.get("id", ""),
@@ -470,6 +576,7 @@ def validate_entry(
         summary_ko=entry.get("description_ko", ""),
         tag_score=llm_result["tag_score"],
         summary_score=llm_result["summary_score"],
+        summary_specificity_score=llm_result["summary_specificity_score"],
         final_verdict=llm_result["final_verdict"],
         reason=llm_result["reason"],
         unsupported_tags=llm_result["unsupported_tags"],
@@ -512,21 +619,22 @@ def render_actions_summary(report: dict[str, Any]) -> str:
     lines.extend(
         [
             "",
-            "| Entry | Type | Verdict | Tag score | Summary score | Notes |",
-            "|---|---|---|---:|---:|---|",
+            "| Entry | Type | Verdict | Tag score | Summary score | Specificity | Notes |",
+            "|---|---|---|---:|---:|---:|---|",
         ]
     )
     for result in report["results"]:
         notes: list[str] = [f"reason: {result['reason']}"]
         if result["unsupported_tags"]:
-            notes.append("unsupported tags: " + ", ".join(result["unsupported_tags"]))
+            notes.append("수정 필요 태그: " + ", ".join(result["unsupported_tags"]))
         if result["unsupported_claims"]:
-            notes.append("unsupported claims: " + ", ".join(result["unsupported_claims"]))
+            notes.append("수정 필요 문구: " + ", ".join(result["unsupported_claims"]))
         if result["evidence_issues"]:
             notes.append("evidence issues: " + "; ".join(result["evidence_issues"]))
         lines.append(
             f"| {result['entry_id']} | {result['entry_type']} | {result['final_verdict']} "
-            f"| {result['tag_score']:.2f} | {result['summary_score']:.2f} | {' / '.join(notes)} |"
+            f"| {result['tag_score']:.2f} | {result['summary_score']:.2f} | "
+            f"{result.get('summary_specificity_score', 0.0):.2f} | {' / '.join(notes)} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -552,6 +660,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=str,
         default="",
         help="Comma-separated entry IDs to validate. Empty means validate all entries.",
+    )
+    parser.add_argument(
+        "--no-print-evidence",
+        action="store_false",
+        dest="print_evidence",
+        default=True,
+        help="Do not print LLM-selected evidence citations to the terminal.",
     )
     return parser.parse_args(argv)
 
@@ -584,7 +699,13 @@ def main(argv: list[str] | None = None) -> int:
 
     results: list[ValidationResult] = []
     for entry_type, entry in entries:
-        result = validate_entry(entry_type, entry, fetcher=fetcher, validator=validator)
+        result = validate_entry(
+            entry_type,
+            entry,
+            fetcher=fetcher,
+            validator=validator,
+            print_evidence=args.print_evidence,
+        )
         results.append(result)
         print(
             f"[{result.final_verdict}] {result.entry_type}:{result.entry_id} "
