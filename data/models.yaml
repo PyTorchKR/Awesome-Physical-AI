@@ -21,10 +21,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 26519
-    github_forks: 5346
+    github_stars: 27928
+    github_forks: 5803
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2024-06-01'
   tags:
   - imitation-learning
@@ -55,10 +55,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 13212
-    github_forks: 2305
+    github_stars: 14082
+    github_forks: 2523
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2024-10-31'
   tags:
   - foundation-model
@@ -87,10 +87,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 6801
-    github_forks: 815
-    hf_downloads: 87306
-    last_updated: '2026-08-09'
+    github_stars: 7110
+    github_forks: 854
+    hf_downloads: 132296
+    last_updated: '2026-10-04'
   added_date: '2024-06-13'
   tags:
   - VLA
@@ -119,10 +119,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 1732
-    github_forks: 278
-    hf_downloads: 69
-    last_updated: '2026-08-09'
+    github_stars: 1794
+    github_forks: 281
+    hf_downloads: 128
+    last_updated: '2026-10-04'
   added_date: '2023-10-01'
   tags:
   - generalist
@@ -151,10 +151,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 2134
-    github_forks: 406
+    github_stars: 2259
+    github_forks: 427
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2023-04-01'
   tags:
   - ALOHA
@@ -183,10 +183,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 4446
-    github_forks: 821
+    github_stars: 4609
+    github_forks: 853
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2023-03-07'
   tags:
   - diffusion
@@ -217,10 +217,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 4459
-    github_forks: 734
+    github_stars: 4473
+    github_forks: 732
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2024-01-04'
   tags:
   - mobile-manipulation
@@ -249,10 +249,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 848
-    github_forks: 122
+    github_stars: 852
+    github_forks: 121
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2024-06-14'
   tags:
   - humanoid
@@ -282,10 +282,10 @@
   communication:
   - ros2
   stats:
-    github_stars: 7780
-    github_forks: 1383
-    hf_downloads: 338
-    last_updated: '2026-08-09'
+    github_stars: 8156
+    github_forks: 1484
+    hf_downloads: 434
+    last_updated: '2026-10-04'
   added_date: '2025-03-19'
   tags:
   - humanoid
@@ -296,32 +296,41 @@
   name: RoboFlamingo
   org: ByteDance
   year: 2023
-  description_en: A vision-language manipulation policy that fine-tunes OpenFlamingo
-    for robotic control on the CALVIN benchmark.
-  description_ko: CALVIN 벤치마크에서 로봇 제어를 위해 OpenFlamingo를 파인튜닝한 비전-언어 조작 정책.
+  description_en: RoboFlamingo fine-tunes OpenFlamingo, an open-source vision-language
+    model, for language-conditioned robot manipulation. It decomposes the problem
+    so that the VLM handles single-step visual comprehension while a separate explicit
+    policy head models sequential history and predicts actions. Instead of discretizing
+    actions into text tokens, it directly regresses continuous 7-DoF actions. It achieves
+    SOTA performance on the CALVIN benchmark with imitation learning alone on a single
+    GPU server.
+  description_ko: RoboFlamingo는 오픈소스 비전-언어 모델인 OpenFlamingo를 언어 조건 기반 로봇 조작에 맞게 파인튜닝한
+    모델입니다. 매 스텝의 시각 이해는 VLM이 담당하고, 순차적인 과거 정보 모델링과 행동 예측은 별도의 명시적 정책 헤드가 담당하도록 문제를
+    분리했습니다. 행동을 텍스트 토큰으로 이산화하지 않고 연속적인 7-DoF 행동을 직접 회귀하는 방식을 사용합니다. 단일 GPU 서버에서 모방학습만으로
+    CALVIN 벤치마크에서 SOTA 성능을 달성합니다.
   github_url: https://github.com/RoboFlamingo/RoboFlamingo
   paper_url: https://arxiv.org/abs/2311.01378
-  hf_url: ''
-  project_url: ''
+  hf_url: https://huggingface.co/robovlms/RoboFlamingo
+  project_url: https://roboflamingo.github.io
   categories:
   - manipulation
   hardware:
   - manipulator
   learning:
   - VLA
+  - IL
   framework:
   - pytorch
   communication: []
   stats:
-    github_stars: 436
+    github_stars: 438
     github_forks: 36
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2023-11-02'
   tags:
-  - VLA
-  - CALVIN
+  - VLM
   - OpenFlamingo
+  - imitation learning
 - id: gr1
   name: GR-1
   org: BAAI / Beijing Academy of AI
@@ -345,10 +354,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 310
-    github_forks: 16
+    github_stars: 309
+    github_forks: 15
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2024-01-01'
   tags:
   - video-pretraining
@@ -377,10 +386,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 282
+    github_stars: 283
     github_forks: 37
-    hf_downloads: 19
-    last_updated: '2026-08-09'
+    hf_downloads: 55
+    last_updated: '2026-10-04'
   added_date: '2024-08-21'
   tags:
   - cross-embodiment
@@ -410,10 +419,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 481
+    github_stars: 485
     github_forks: 24
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2026-05-17'
   tags: []
 - id: cogact
@@ -443,10 +452,10 @@
   communication:
   - other
   stats:
-    github_stars: 430
+    github_stars: 432
     github_forks: 40
     hf_downloads: 0
-    last_updated: '2026-08-09'
+    last_updated: '2026-10-04'
   added_date: '2026-06-21'
   tags:
   - VLA
@@ -490,10 +499,10 @@
   communication:
   - other
   stats:
-    github_stars: 102
+    github_stars: 109
     github_forks: 3
-    hf_downloads: 7
-    last_updated: '2026-08-09'
+    hf_downloads: 12
+    last_updated: '2026-10-04'
   added_date: '2026-07-26'
   tags:
   - VLA
@@ -537,10 +546,10 @@
   communication:
   - other
   stats:
-    github_stars: 0
-    github_forks: 0
-    hf_downloads: 0
-    last_updated: '2026-08-23'
+    github_stars: 1807
+    github_forks: 167
+    hf_downloads: 405
+    last_updated: '2026-10-04'
   added_date: '2026-08-23'
   tags:
   - bimanual-manipulation
