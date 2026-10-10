@@ -31,7 +31,7 @@
 | Name | Organization | Year | Category | Hardware | Learning | ⭐ Stars | Links |
 |------|-------------|------|----------|----------|----------|---------|-------|
 | [LeRobot](https://github.com/huggingface/lerobot) | Hugging Face | 2024 | manipulation | manipulator, humanoid, mobile | VLA, IL, RL, diffusion, world_model | 27,928 | [📄](https://arxiv.org/abs/2602.22818) [🤗](https://huggingface.co/lerobot) |
-| [π0 (pi-zero)](https://github.com/Physical-Intelligence/openpi) | Physical Intelligence | 2024 | manipulation, whole-body | manipulator, humanoid | VLA, diffusion | 14,082 | [📄](https://arxiv.org/abs/2410.24164) [🤗](https://huggingface.co/physical-intelligence/pi0) |
+| [π0 (pi-zero)](https://github.com/Physical-Intelligence/openpi) | Physical Intelligence | 2024 | manipulation | manipulator, mobile | VLA, diffusion | 14,082 | [📄](https://arxiv.org/abs/2410.24164) [🤗](https://huggingface.co/lerobot/pi0_base) |
 | [GR00T N1](https://github.com/NVIDIA/Isaac-GR00T) | NVIDIA | 2025 | manipulation, whole-body | humanoid | VLA, IL | 8,156 | [📄](https://arxiv.org/abs/2503.14734) [🤗](https://huggingface.co/nvidia/GR00T-N1-2B) |
 | [OpenVLA](https://github.com/openvla/openvla) | Stanford / UC Berkeley | 2024 | manipulation | manipulator | VLA | 7,110 | [📄](https://arxiv.org/abs/2406.09246) [🤗](https://huggingface.co/openvla/openvla-7b) |
 | [Diffusion Policy](https://github.com/real-stanford/diffusion_policy) | Columbia University | 2023 | manipulation | manipulator | IL, diffusion | 4,609 | [📄](https://arxiv.org/abs/2303.04137)  |
@@ -40,7 +40,7 @@
 | [RDT-1B](https://github.com/thu-ml/RoboticsDiffusionTransformer) | Tsinghua University | 2024 | manipulation, dexterous | manipulator | VLA, IL, diffusion | 1,807 | [📄](https://arxiv.org/abs/2410.07864) [🤗](https://huggingface.co/robotics-diffusion-transformer/rdt-1b) |
 | [Octo](https://github.com/octo-models/octo) | UC Berkeley / Stanford / CMU / others | 2023 | manipulation | manipulator, mobile | IL, VLA | 1,794 | [📄](https://arxiv.org/abs/2405.12213) [🤗](https://huggingface.co/rail-berkeley/octo-base) |
 | [HumanPlus](https://github.com/MarkFzp/humanplus) | Stanford | 2024 | manipulation, whole-body | humanoid | IL | 852 | [📄](https://arxiv.org/abs/2406.10454)  |
-| [RoboVLMs](https://github.com/Robot-VLAs/RoboVLMs) | Multiple | 2025 | manipulation | manipulator | VLA, IL | 485 | [📄](https://arxiv.org/abs/2412.14058) [🤗](https://huggingface.co/robovlms/RoboVLMs) |
+| [RoboVLMs](https://github.com/Robot-VLAs/RoboVLMs) | Tsinghua University / ByteDance Research / CASIA / SJTU / NUS | 2024 | manipulation | manipulator | VLA | 485 | [📄](https://arxiv.org/abs/2412.14058) [🤗](https://huggingface.co/robovlms/RoboVLMs) |
 | [RoboFlamingo](https://github.com/RoboFlamingo/RoboFlamingo) | ByteDance | 2023 | manipulation | manipulator | VLA, IL | 438 | [📄](https://arxiv.org/abs/2311.01378) [🤗](https://huggingface.co/robovlms/RoboFlamingo) |
 | [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia / USTC / CAS | 2024 | manipulation | manipulator | VLA, diffusion | 432 | [📄](https://arxiv.org/abs/2411.19650) [🤗](https://huggingface.co/CogACT/CogACT-Base) |
 | [GR-1](https://github.com/bytedance/GR-1) | ByteDance Research | 2023 | manipulation | manipulator | VLA, world_model | 309 | [📄](https://arxiv.org/abs/2312.13139)  |
