@@ -48,26 +48,32 @@
   name: π0 (pi-zero)
   org: Physical Intelligence
   year: 2024
-  description_en: A generalist robot foundation model based on a flow-matching policy.
-    Supports dexterous manipulation and whole-body control.
-  description_ko: 플로우 매칭 정책 기반의 범용 로봇 파운데이션 모델. 정교한 조작과 전신 제어를 지원합니다.
+  description_en: A VLA that attaches a separate flow-matching "action expert" to
+    a pretrained vision-language model (PaliGemma), generating continuous action chunks
+    at up to 50 Hz for dexterous control. It is broadly pre-trained on diverse data
+    from 7 robot configurations (single-arm, dual-arm and mobile manipulators), then
+    post-trained on high-quality curated data for complex multi-stage tasks such as
+    laundry folding.
+  description_ko: 사전학습된 비전-언어 모델(PaliGemma)에 별도의 flow-matching "action expert"를 붙여
+    최대 50Hz의 연속 행동 청크를 생성하는 VLA. 7가지 로봇 구성(단일 팔·양팔·모바일 매니퓰레이터)의 다양한 데이터로 폭넓게 사전학습한
+    뒤, 고품질 정제 데이터로 사후학습해 빨래 개기 같은 복잡한 다단계 작업을 수행하도록 하는 2단계 학습 방식을 제시했습니다.
   github_url: https://github.com/Physical-Intelligence/openpi
   paper_url: https://arxiv.org/abs/2410.24164
-  hf_url: https://huggingface.co/physical-intelligence/pi0
+  hf_url: https://huggingface.co/lerobot/pi0_base
   project_url: https://www.physicalintelligence.company/blog/pi0
   categories:
   - manipulation
-  - whole-body
   hardware:
   - manipulator
-  - humanoid
+  - mobile
   learning:
   - VLA
   - diffusion
   framework:
   - jax
   - pytorch
-  communication: []
+  communication:
+  - other
   stats:
     github_stars: 14082
     github_forks: 2523
@@ -75,10 +81,8 @@
     last_updated: '2026-10-04'
   added_date: '2024-10-31'
   tags:
-  - foundation-model
   - flow-matching
-  - dexterous
-  - open-weights
+  - action-expert
 - id: openvla
   name: OpenVLA
   org: Stanford / UC Berkeley
