@@ -32,7 +32,7 @@
 |------|-------------|------|----------|----------|----------|---------|-------|
 | [LeRobot](https://github.com/huggingface/lerobot) | Hugging Face | 2024 | manipulation | manipulator, humanoid, mobile | VLA, IL, RL, diffusion, world_model | 27,928 | [📄](https://arxiv.org/abs/2602.22818) [🤗](https://huggingface.co/lerobot) |
 | [π0 (pi-zero)](https://github.com/Physical-Intelligence/openpi) | Physical Intelligence | 2024 | manipulation | manipulator, mobile | VLA, diffusion | 14,082 | [📄](https://arxiv.org/abs/2410.24164) [🤗](https://huggingface.co/lerobot/pi0_base) |
-| [GR00T N1](https://github.com/NVIDIA/Isaac-GR00T) | NVIDIA | 2025 | manipulation, whole-body | humanoid | VLA, IL | 8,156 | [📄](https://arxiv.org/abs/2503.14734) [🤗](https://huggingface.co/nvidia/GR00T-N1-2B) |
+| [GR00T N1](https://github.com/NVIDIA/Isaac-GR00T) | NVIDIA | 2025 | manipulation, dexterous | manipulator, humanoid, hand | VLA, diffusion | 8,156 | [📄](https://arxiv.org/abs/2503.14734) [🤗](https://huggingface.co/nvidia/GR00T-N1-2B) |
 | [OpenVLA](https://github.com/openvla/openvla) | Stanford / UC Berkeley | 2024 | manipulation | manipulator | VLA | 7,110 | [📄](https://arxiv.org/abs/2406.09246) [🤗](https://huggingface.co/openvla/openvla-7b) |
 | [Diffusion Policy](https://github.com/real-stanford/diffusion_policy) | Columbia University | 2023 | manipulation | manipulator | IL, diffusion | 4,609 | [📄](https://arxiv.org/abs/2303.04137)  |
 | [Mobile ALOHA](https://github.com/MarkFzp/mobile-aloha) | Stanford | 2024 | manipulation, navigation, whole-body | mobile, manipulator | IL | 4,473 | [📄](https://arxiv.org/abs/2401.02117)  |
