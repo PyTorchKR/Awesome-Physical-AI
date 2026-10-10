@@ -343,28 +343,30 @@
       "name": "GR00T N1",
       "org": "NVIDIA",
       "year": 2025,
-      "description_en": "NVIDIA's humanoid foundation model with cross-embodiment generalization. Combines vision-language understanding with action generation.",
-      "description_ko": "NVIDIA의 교차 구현 일반화 기능을 갖춘 휴머노이드 파운데이션 모델. 비전-언어 이해와 행동 생성을 결합합니다.",
+      "description_en": "A dual-system VLA for humanoids: an Eagle-2 VLM (System 2) interprets vision and language, while a diffusion transformer trained with flow matching (System 1) generates real-time motor actions, with both modules trained jointly end-to-end. It learns from a \"data pyramid\" of web and human videos, synthetic simulation and neural-generated trajectories, and real-robot data, using latent actions and inverse-dynamics pseudo-labels to train on action-less videos.",
+      "description_ko": "Eagle-2 VLM(System 2)이 시각·언어로 상황을 해석하고, flow matching으로 학습한 Diffusion Transformer(System 1)가 실시간 행동을 생성하는 이중 시스템 구조의 휴머노이드용 VLA로, 두 모듈을 end-to-end로 함께 학습합니다. 웹·휴먼 비디오, 시뮬레이션·뉴럴 생성 합성 데이터, 실제 로봇 데이터를 '데이터 피라미드'로 구성하고, 행동 라벨이 없는 비디오에는 잠재 행동(latent action)과 역동역학 모델(IDM)로 의사 라벨을 붙여 학습에 활용합니다.",
       "github_url": "https://github.com/NVIDIA/Isaac-GR00T",
       "paper_url": "https://arxiv.org/abs/2503.14734",
       "hf_url": "https://huggingface.co/nvidia/GR00T-N1-2B",
       "project_url": "https://developer.nvidia.com/isaac/gr00t",
       "categories": [
         "manipulation",
-        "whole-body"
+        "dexterous"
       ],
       "hardware": [
-        "humanoid"
+        "manipulator",
+        "humanoid",
+        "hand"
       ],
       "learning": [
         "VLA",
-        "IL"
+        "diffusion"
       ],
       "framework": [
         "pytorch"
       ],
       "communication": [
-        "ros2"
+        "other"
       ],
       "stats": {
         "github_stars": 8156,
@@ -374,10 +376,8 @@
       },
       "added_date": "2025-03-19",
       "tags": [
-        "humanoid",
-        "foundation-model",
-        "NVIDIA",
-        "cross-embodiment"
+        "dual-system",
+        "data-pyramid"
       ]
     },
     {
