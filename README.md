@@ -7,7 +7,7 @@
 [![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-11-purple)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Organizations](https://img.shields.io/badge/Organizations-33-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
-[![Updated](https://img.shields.io/badge/Updated-2026-10-05-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
+[![Updated](https://img.shields.io/badge/Updated-2026-10-10-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkr.github.io/Awesome-Physical-AI)
 
 > **[👉 인터랙티브 대시보드에서 필터링 및 시각화 보기 | View Interactive Dashboard](https://pytorchkr.github.io/Awesome-Physical-AI)**
@@ -42,7 +42,7 @@
 | [HumanPlus](https://github.com/MarkFzp/humanplus) | Stanford | 2024 | manipulation, whole-body | humanoid | IL | 852 | [📄](https://arxiv.org/abs/2406.10454)  |
 | [RoboVLMs](https://github.com/Robot-VLAs/RoboVLMs) | Multiple | 2025 | manipulation | manipulator | VLA, IL | 485 | [📄](https://arxiv.org/abs/2412.14058) [🤗](https://huggingface.co/robovlms/RoboVLMs) |
 | [RoboFlamingo](https://github.com/RoboFlamingo/RoboFlamingo) | ByteDance | 2023 | manipulation | manipulator | VLA, IL | 438 | [📄](https://arxiv.org/abs/2311.01378) [🤗](https://huggingface.co/robovlms/RoboFlamingo) |
-| [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia | 2024 | manipulation | manipulator | VLA, diffusion | 432 | [📄](https://cogact.github.io/CogACT_paper.pdf) [🤗](https://huggingface.co/CogACT) |
+| [CogACT](https://github.com/microsoft/CogACT) | Tsinghua University / Microsoft Research Asia / USTC / CAS | 2024 | manipulation | manipulator | VLA, diffusion | 432 | [📄](https://arxiv.org/abs/2411.19650) [🤗](https://huggingface.co/CogACT/CogACT-Base) |
 | [GR-1](https://github.com/bytedance/GR-1) | BAAI / Beijing Academy of AI | 2024 | manipulation | manipulator | VLA, IL | 309 | [📄](https://arxiv.org/abs/2312.13139)  |
 | [CrossFormer](https://github.com/rail-berkeley/crossformer) | UC Berkeley / others | 2024 | manipulation | manipulator, mobile | IL, VLA | 283 | [📄](https://arxiv.org/abs/2408.11812) [🤗](https://huggingface.co/rail-berkeley/crossformer) |
 | [DIAL](https://github.com/xpeng-robotics/DIAL) | The University of Hong Kong / XPENG Robotics | 2026 | manipulation | manipulator, humanoid | VLA, IL, diffusion, world_model | 109 | [📄](https://arxiv.org/abs/2603.29844) [🤗](https://huggingface.co/xpeng-robotics/DIAL_checkpoints) |

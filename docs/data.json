@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "last_updated": "2026-10-05",
+    "last_updated": "2026-10-10",
     "total_models": 16,
     "total_datasets": 11,
     "total_tools": 11,
@@ -529,13 +529,13 @@
     {
       "id": "cogact",
       "name": "CogACT",
-      "org": "Tsinghua University / Microsoft Research Asia",
+      "org": "Tsinghua University / Microsoft Research Asia / USTC / CAS",
       "year": 2024,
-      "description_en": "CogACT is a componentized Vision-Language-Action architecture that decouples cognition from action. It utilizes powerful Vision-Language Models  to extract cognitive features, which then condition a specialized Diffusion Transformer-based action module to predict continuous, temporally-correlated robotic action sequences.",
-      "description_ko": "CogACT는 기존의 단일 신경망 모델들과 달리 인지와 행동을 명확히 분리한 컴포넌트형 비전-언어-행동 모델입니다. 강력한 비전-언어 모델을 통해 인지적 특징을 추출하고, 이를 조건으로 특화된 Diffusion Transformer 기반의 행동 모델이 복잡하고 연속적인 로봇의 물리적 제어 궤적을 예측합니다.",
+      "description_en": "A componentized VLA that decouples cognition from action: instead of quantizing actions into VLM tokens, a specialized Diffusion Transformer action module conditioned on the VLM's cognitive output models continuous action sequences, and scaling this module—small relative to the 7B VLM—yields sizable gains. It also introduces Adaptive Action Ensemble, which adaptively fuses past action predictions.",
+      "description_ko": "행동을 VLM 토큰으로 양자화하는 대신, VLM이 추출한 인지 특징을 조건으로 받는 별도의 Diffusion Transformer 행동 모듈이 연속 행동 시퀀스를 모델링하도록 인지와 행동을 분리한 컴포넌트형 VLA. 7B VLM 본체에 비해 작은 이 행동 모듈만 키워도 성능이 크게 향상되는 스케일링 특성을 보였고, 과거 행동 예측을 적응적으로 결합하는 Adaptive Action Ensemble도 함께 제안했습니다.",
       "github_url": "https://github.com/microsoft/CogACT",
-      "paper_url": "https://cogact.github.io/CogACT_paper.pdf",
-      "hf_url": "https://huggingface.co/CogACT",
+      "paper_url": "https://arxiv.org/abs/2411.19650",
+      "hf_url": "https://huggingface.co/CogACT/CogACT-Base",
       "project_url": "https://cogact.github.io/",
       "categories": [
         "manipulation"
@@ -561,8 +561,7 @@
       },
       "added_date": "2026-06-21",
       "tags": [
-        "VLA",
-        "diffusion",
+        "diffusion-transformer",
         "foundation-model"
       ]
     },
