@@ -107,6 +107,7 @@ body:
         - label: "dexterous"
         - label: "whole-body"
         - label: "aerial"
+        - label: "underwater"
     validations:
       required: true
 
@@ -121,6 +122,7 @@ body:
         - label: "biped"
         - label: "mobile"
         - label: "drone"
+        - label: "underwater"
         - label: "hand"
     validations:
       required: true
@@ -136,6 +138,7 @@ body:
         - label: "diffusion"
         - label: "world_model"
         - label: "sim2real"
+        - label: "few-shot"
     validations:
       required: true
 
@@ -147,6 +150,8 @@ body:
         - label: "pytorch"
         - label: "jax"
         - label: "tensorflow"
+        - label: "mujoco"
+        - label: "isaacgym"
         - label: "other"
 
   - type: checkboxes
@@ -154,6 +159,7 @@ body:
     attributes:
       label: "Communication"
       options:
+        - label: "ros1"
         - label: "ros2"
         - label: "grpc"
         - label: "lcm"
