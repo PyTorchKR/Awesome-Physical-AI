@@ -34,8 +34,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python scripts/update_stats.py
 
-      - name: Regenerate README and dashboard data
-        run: python scripts/generate_site.py
+      # README.md and docs/ are rebuilt by build-site.yml after this PR merges.
+      # Committing them here made the PR conflict with every entry PR merged
+      # in the meantime.
 
       - name: Commit and open PR
         env:
@@ -43,7 +44,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/models.yaml data/datasets.yaml data/tools.yaml docs/data.json README.md
+          git add data/models.yaml data/datasets.yaml data/tools.yaml
           if git diff --staged --quiet; then
             echo "No changes to commit."
             exit 0
