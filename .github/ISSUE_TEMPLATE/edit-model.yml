@@ -156,8 +156,7 @@ body:
         - label: "diffusion"
         - label: "world_model"
         - label: "sim2real"
-        - label: "meta-learning"
-        - label: "self-supervised"
+        - label: "few-shot"
 
   - type: checkboxes
     id: framework
@@ -178,6 +177,7 @@ body:
       label: "Communication"
       description: "체크하면 communication 전체를 교체 | Checking any box replaces the whole list"
       options:
+        - label: "ros1"
         - label: "ros2"
         - label: "grpc"
         - label: "lcm"
