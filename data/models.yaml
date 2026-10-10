@@ -347,12 +347,15 @@
   - imitation learning
 - id: gr1
   name: GR-1
-  org: BAAI / Beijing Academy of AI
-  year: 2024
-  description_en: Unleashing Large-Scale Video Generative Pre-Training for Visual
-    Robot Manipulation. GPT-style pre-training on video then fine-tuned for robot
-    control.
-  description_ko: 시각 로봇 조작을 위한 대규모 비디오 생성 사전학습. 비디오에서 GPT 스타일 사전학습 후 로봇 제어로 파인튜닝.
+  org: ByteDance Research
+  year: 2023
+  description_en: A GPT-style transformer for language-conditioned visual manipulation
+    that jointly predicts robot actions and future images from a language instruction,
+    observation images and robot states. This future-frame prediction objective lets
+    it be generatively pre-trained on large-scale human video (Ego4D) and then seamlessly
+    fine-tuned on robot data.
+  description_ko: 언어 지시·관측 이미지·로봇 상태를 입력받아 로봇 행동과 미래 이미지를 함께 예측하는 GPT 스타일 트랜스포머 기반
+    시각 로봇 조작 모델. 미래 프레임 예측을 목표로 하며, 대규모 휴먼 비디오(Ego4D)로 생성형 모델을 사전학습한 뒤 로봇 데이터로 파인튜닝합니다.
   github_url: https://github.com/bytedance/GR-1
   paper_url: https://arxiv.org/abs/2312.13139
   hf_url: ''
@@ -363,7 +366,7 @@
   - manipulator
   learning:
   - VLA
-  - IL
+  - world_model
   framework:
   - pytorch
   communication: []
@@ -374,9 +377,8 @@
     last_updated: '2026-10-04'
   added_date: '2024-01-01'
   tags:
-  - video-pretraining
-  - GPT
-  - manipulation
+  - video-generative-pretraining
+  - future-frame-prediction
 - id: crossformer
   name: CrossFormer
   org: UC Berkeley / others
