@@ -6,7 +6,7 @@
 [![Models](https://img.shields.io/badge/Models-16-blue)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Datasets](https://img.shields.io/badge/Datasets-11-green)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Simulators](https://img.shields.io/badge/Simulators-11-purple)](https://pytorchkr.github.io/Awesome-Physical-AI)
-[![Organizations](https://img.shields.io/badge/Organizations-33-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
+[![Organizations](https://img.shields.io/badge/Organizations-34-orange)](https://pytorchkr.github.io/Awesome-Physical-AI)
 [![Updated](https://img.shields.io/badge/Updated-2026-10-10-lightgrey)](https://github.com/PyTorchKR/Awesome-Physical-AI)
 [![Dashboard](https://img.shields.io/badge/🌐_Dashboard-Live-brightgreen)](https://pytorchkr.github.io/Awesome-Physical-AI)
 
@@ -36,7 +36,7 @@
 | [OpenVLA](https://github.com/openvla/openvla) | Stanford / UC Berkeley | 2024 | manipulation | manipulator | VLA | 7,110 | [📄](https://arxiv.org/abs/2406.09246) [🤗](https://huggingface.co/openvla/openvla-7b) |
 | [Diffusion Policy](https://github.com/real-stanford/diffusion_policy) | Columbia University | 2023 | manipulation | manipulator | IL, diffusion | 4,609 | [📄](https://arxiv.org/abs/2303.04137)  |
 | [Mobile ALOHA](https://github.com/MarkFzp/mobile-aloha) | Stanford | 2024 | manipulation, navigation, whole-body | mobile, manipulator | IL | 4,473 | [📄](https://arxiv.org/abs/2401.02117)  |
-| [ACT (Action Chunking with Transformers)](https://github.com/tonyzhaozh/act) | Stanford | 2023 | manipulation, dexterous | manipulator | IL | 2,259 | [📄](https://arxiv.org/abs/2304.13705)  |
+| [ACT (Action Chunking with Transformers)](https://github.com/tonyzhaozh/act) | Stanford / UC Berkeley / Meta | 2023 | manipulation | manipulator | IL | 2,259 | [📄](https://arxiv.org/abs/2304.13705)  |
 | [RDT-1B](https://github.com/thu-ml/RoboticsDiffusionTransformer) | Tsinghua University | 2024 | manipulation, dexterous | manipulator | VLA, IL, diffusion | 1,807 | [📄](https://arxiv.org/abs/2410.07864) [🤗](https://huggingface.co/robotics-diffusion-transformer/rdt-1b) |
 | [Octo](https://github.com/octo-models/octo) | UC Berkeley / Stanford / CMU / others | 2023 | manipulation | manipulator, mobile | IL, VLA | 1,794 | [📄](https://arxiv.org/abs/2405.12213) [🤗](https://huggingface.co/rail-berkeley/octo-base) |
 | [HumanPlus](https://github.com/MarkFzp/humanplus) | Stanford | 2024 | manipulation, locomotion, whole-body | humanoid, hand | IL, RL, sim2real | 852 | [📄](https://arxiv.org/abs/2406.10454)  |
