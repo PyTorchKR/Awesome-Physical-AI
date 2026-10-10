@@ -32,11 +32,10 @@ VALID_HARDWARE = {
     "mobile", "drone", "underwater", "hand",
 }
 VALID_LEARNING = {
-    "VLA", "IL", "RL", "diffusion", "world_model", "sim2real",
-    "meta-learning", "self-supervised",
+    "VLA", "IL", "RL", "diffusion", "world_model", "sim2real", "few-shot",
 }
 VALID_FRAMEWORK = {"pytorch", "jax", "tensorflow", "mujoco", "isaacgym", "other"}
-VALID_COMMUNICATION = {"ros2", "grpc", "lcm", "zenoh", "other"}
+VALID_COMMUNICATION = {"ros1", "ros2", "grpc", "lcm", "zenoh", "other"}
 VALID_SOURCE = {"real", "simulation", "teleoperation", "human_demo", "mocap"}
 VALID_MODALITY = {
     "rgb", "rgbd", "depth", "lidar", "tactile",
