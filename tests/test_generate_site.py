@@ -7,7 +7,9 @@ Run with:
 
 import json
 import pytest
+import yaml
 import generate_site as gs
+import validate_data as vd
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -275,3 +277,36 @@ def test_generate_data_json_empty_inputs():
     assert result["models"] == []
     assert result["datasets"] == []
     assert result["tools"] == []
+
+
+def test_generate_site_reuses_benchmark_meta_source():
+    assert gs.BENCHMARK_META is vd.BENCHMARK_META
+
+
+def test_generate_site_main_writes_benchmark_meta_at_root(
+    tmp_path, monkeypatch, sample_model, sample_dataset, sample_tool
+):
+    data_dir = tmp_path / "data"
+    docs_dir = tmp_path / "docs"
+    readme_path = tmp_path / "README.md"
+    data_dir.mkdir()
+
+    for filename, entries in {
+        "models.yaml": [sample_model],
+        "datasets.yaml": [sample_dataset],
+        "tools.yaml": [sample_tool],
+    }.items():
+        (data_dir / filename).write_text(
+            yaml.safe_dump(entries, allow_unicode=True), encoding="utf-8"
+        )
+
+    monkeypatch.setattr(gs, "DATA_DIR", data_dir)
+    monkeypatch.setattr(gs, "DOCS_DIR", docs_dir)
+    monkeypatch.setattr(gs, "README_PATH", readme_path)
+
+    gs.main()
+
+    payload = json.loads((docs_dir / "data.json").read_text(encoding="utf-8"))
+    assert payload["benchmark_meta"] == vd.BENCHMARK_META
+    assert set(payload["benchmark_meta"]) == set(vd.BENCHMARK_META)
+    assert "benchmark_meta" not in payload["metadata"]
