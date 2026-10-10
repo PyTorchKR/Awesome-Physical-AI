@@ -413,13 +413,17 @@
   - transformer
 - id: robovlms
   name: RoboVLMs
-  org: Multiple
-  year: 2025
-  description_en: A systematically optimized VLA  framework for generalist robots.
-    It easily transfers various foundation VLMs into robust control policies with
-    minimal manual design and supports cross-embodiment data integration.
-  description_ko: 범용 로봇을 위해 체계적으로 최적화된 VLA 프레임워크. 최소한의 설계로 다양한 파운데이션 VLM을 강건한 로봇 제어
-    정책으로 전환하며, 다기종 로봇 데이터 통합을 지원합니다.
+  org: Tsinghua University / ByteDance Research / CASIA / SJTU / NUS
+  year: 2024
+  description_en: A systematic study of how to build VLAs from VLMs, answering three
+    design questions (which VLM backbone to use, how to formulate the VLA architecture,
+    and when to add cross-embodiment data) through 600+ experiments across 8+ VLM
+    backbones and 4 policy architectures. The findings are released as RoboVLMs, a
+    flexible open-source framework for easily integrating new VLMs and freely combining
+    design choices.
+  description_ko: VLM으로 VLA를 만들 때 어떤 백본을 쓸지, VLA 구조를 어떻게 구성할지, 이기종 로봇(cross-embodiment)
+    데이터를 언제 추가할지라는 세 가지 설계 질문을 8개 이상의 VLM 백본과 4가지 정책 구조, 600여 개 실험으로 체계적으로 분석한 연구.
+    그 결과를 새 VLM을 쉽게 통합하고 설계 요소를 자유롭게 조합할 수 있는 오픈소스 프레임워크 RoboVLMs로 공개했습니다.
   github_url: https://github.com/Robot-VLAs/RoboVLMs
   paper_url: https://arxiv.org/abs/2412.14058
   hf_url: https://huggingface.co/robovlms/RoboVLMs
@@ -430,7 +434,6 @@
   - manipulator
   learning:
   - VLA
-  - IL
   framework:
   - pytorch
   communication: []
@@ -440,7 +443,9 @@
     hf_downloads: 0
     last_updated: '2026-10-04'
   added_date: '2026-05-17'
-  tags: []
+  tags:
+  - vla-design-study
+  - vlm-backbone
 - id: cogact
   name: CogACT
   org: Tsinghua University / Microsoft Research Asia / USTC / CAS
