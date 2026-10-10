@@ -248,22 +248,32 @@
   name: HumanPlus
   org: Stanford
   year: 2024
-  description_en: Humanoid shadowing and imitation from human video. A humanoid robot
-    that learns to shadow humans and imitate skills from egocentric video.
-  description_ko: 인간 영상으로부터의 휴머노이드 섀도잉 및 모방 학습. 자아중심 비디오에서 기술을 모방하는 휴머노이드 로봇입니다.
+  description_en: A low-level humanoid policy, trained with RL in simulation on 40
+    hours of human motion data, transfers to the real robot and lets it shadow human
+    body and hand motion in real time from a single RGB camera. Using this shadowing
+    as teleoperation to collect whole-body demonstrations, HumanPlus then trains autonomous
+    skill policies from egocentric vision via behavior cloning.
+  description_ko: 40시간 분량의 인간 모션 데이터로 시뮬레이션에서 RL로 학습한 저수준 정책을 실제 휴머노이드에 옮겨, RGB 카메라
+    하나로 사람의 몸과 손 동작을 실시간으로 따라 하게(섀도잉) 합니다. 이 섀도잉을 원격조종으로 활용해 전신 시연 데이터를 모으고, 1인칭 시각
+    기반 행동 복제로 자율 스킬 정책을 학습합니다.
   github_url: https://github.com/MarkFzp/humanplus
   paper_url: https://arxiv.org/abs/2406.10454
   hf_url: ''
   project_url: https://humanoid-ai.github.io
   categories:
   - manipulation
+  - locomotion
   - whole-body
   hardware:
   - humanoid
+  - hand
   learning:
   - IL
+  - RL
+  - sim2real
   framework:
   - pytorch
+  - isaacgym
   communication:
   - ros2
   stats:
@@ -273,9 +283,8 @@
     last_updated: '2026-10-04'
   added_date: '2024-06-14'
   tags:
-  - humanoid
-  - shadowing
-  - egocentric
+  - humanoid-shadowing
+  - whole-body-teleoperation
 - id: groot
   name: GR00T N1
   org: NVIDIA
