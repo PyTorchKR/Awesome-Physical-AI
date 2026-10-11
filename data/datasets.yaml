@@ -27,9 +27,9 @@
     environments: 527
     robots: 22
   stats:
-    github_stars: 2056
-    hf_downloads: 23441
-    last_updated: '2026-10-04'
+    github_stars: 2059
+    hf_downloads: 19997
+    last_updated: '2026-10-11'
     github_forks: 129
   added_date: '2023-10-13'
   tags:
@@ -66,9 +66,9 @@
     environments: 564
     robots: 1
   stats:
-    github_stars: 446
+    github_stars: 449
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 100
   added_date: '2024-03-19'
   tags:
@@ -105,7 +105,7 @@
   stats:
     github_stars: 292
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 35
   added_date: '2023-08-24'
   tags:
@@ -145,9 +145,9 @@
     environments: 0
     robots: 10
   stats:
-    github_stars: 114
+    github_stars: 115
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 15
   added_date: '2023-07-02'
   tags:
@@ -181,10 +181,10 @@
     environments: 4
     robots: 1
   stats:
-    github_stars: 2379
+    github_stars: 2405
     hf_downloads: 0
-    last_updated: '2026-10-04'
-    github_forks: 510
+    last_updated: '2026-10-11'
+    github_forks: 511
   added_date: '2023-06-05'
   tags:
   - benchmark
@@ -220,10 +220,10 @@
     environments: 20
     robots: 8
   stats:
-    github_stars: 3374
-    hf_downloads: 261
-    last_updated: '2026-10-04'
-    github_forks: 551
+    github_stars: 3391
+    hf_downloads: 526
+    last_updated: '2026-10-11'
+    github_forks: 552
   added_date: '2023-02-09'
   tags:
   - benchmark
@@ -258,9 +258,9 @@
     environments: 1
     robots: 1
   stats:
-    github_stars: 366
+    github_stars: 368
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 30
   added_date: '2022-10-04'
   tags:
@@ -299,7 +299,7 @@
   stats:
     github_stars: 798
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 129
   added_date: '2024-03-15'
   tags:
@@ -332,10 +332,10 @@
     environments: 50
     robots: 1
   stats:
-    github_stars: 1889
+    github_stars: 1890
     hf_downloads: 0
-    last_updated: '2026-10-04'
-    github_forks: 355
+    last_updated: '2026-10-11'
+    github_forks: 357
   added_date: '2019-10-23'
   tags:
   - benchmark
@@ -372,7 +372,7 @@
   stats:
     github_stars: 378
     hf_downloads: 0
-    last_updated: '2026-10-04'
+    last_updated: '2026-10-11'
     github_forks: 30
   added_date: '2023-09-05'
   tags:
@@ -418,9 +418,9 @@
     environments: 0
     robots: 12
   stats:
-    github_stars: 1733
+    github_stars: 1744
     hf_downloads: 0
-    last_updated: '2026-10-04'
-    github_forks: 251
+    last_updated: '2026-10-11'
+    github_forks: 255
   added_date: '2026-06-29'
   tags: []
