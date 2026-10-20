@@ -38,7 +38,7 @@ GEMINI_API_URL = (
     "{model}:generateContent"
 )
 DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-REQUEST_TIMEOUT_SECONDS = 30
+REQUEST_TIMEOUT_SECONDS = 60
 MAX_EVIDENCE_CHARS = 6000
 VALID_VERDICTS = {"pass", "warning", "fail"}
 RETRYABLE_STATUS_CODES = {429, 503}
@@ -305,22 +305,40 @@ class GeminiValidator:
         last_retryable_error: requests.HTTPError | None = None
 
         for attempt in range(1, MAX_GEMINI_RETRIES + 1):
-            response = self.session.post(
-                GEMINI_API_URL.format(model=self.model),
-                headers={
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": self.api_key,
-                },
-                json={
-                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                    "generationConfig": {
-                        "temperature": 0,
-                        "responseMimeType": "application/json",
-                        "responseSchema": VALIDATION_SCHEMA,
+            try:
+                response = self.session.post(
+                    GEMINI_API_URL.format(model=self.model),
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-goog-api-key": self.api_key,
                     },
-                },
-                timeout=REQUEST_TIMEOUT_SECONDS,
-            )
+                    json={
+                        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                        "generationConfig": {
+                            "temperature": 0,
+                            "responseMimeType": "application/json",
+                            "responseSchema": VALIDATION_SCHEMA,
+                        },
+                    },
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                )
+            except requests.Timeout as exc:
+                if attempt < MAX_GEMINI_RETRIES:
+                    backoff = RETRY_BACKOFF_SECONDS[
+                        min(attempt - 1, len(RETRY_BACKOFF_SECONDS) - 1)
+                    ]
+                    print(
+                        f"Gemini request timed out for {entry.get('id', '<no-id>')}; "
+                        f"retrying ({attempt}/{MAX_GEMINI_RETRIES}) after {backoff:.1f}s"
+                    )
+                    time.sleep(backoff)
+                    continue
+                raise RetryableGeminiError(
+                    entry_id=entry.get("id", ""),
+                    status_code=0,
+                    attempts=attempt,
+                    message=f"Gemini request timed out after {attempt} attempts",
+                ) from exc
             try:
                 response.raise_for_status()
             except requests.HTTPError as exc:
@@ -542,7 +560,8 @@ def validate_entry(
     except RetryableGeminiError as exc:
         warning_reason = (
             f"Gemini validation temporarily unavailable after {exc.attempts} attempts "
-            f"(status {exc.status_code}); marked as warning and continued."
+            f"({'timeout' if exc.status_code == 0 else f'status {exc.status_code}'}); "
+            "marked as warning and continued."
         )
         issues = list(evidence.issues)
         issues.append(warning_reason)
