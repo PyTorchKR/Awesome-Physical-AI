@@ -31,10 +31,10 @@
   communication:
   - grpc
   stats:
-    github_stars: 28069
-    github_forks: 5862
+    github_stars: 28452
+    github_forks: 5945
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2024-06-01'
   tags:
   - robot-learning-library
@@ -75,10 +75,10 @@
   communication:
   - other
   stats:
-    github_stars: 14167
-    github_forks: 2539
-    hf_downloads: 22622
-    last_updated: '2026-10-11'
+    github_stars: 14382
+    github_forks: 2585
+    hf_downloads: 14182
+    last_updated: '2026-10-25'
   added_date: '2024-10-31'
   tags:
   - flow-matching
@@ -105,10 +105,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 7134
-    github_forks: 858
-    hf_downloads: 154092
-    last_updated: '2026-10-11'
+    github_stars: 7208
+    github_forks: 868
+    hf_downloads: 146188
+    last_updated: '2026-10-25'
   added_date: '2024-06-13'
   tags:
   - VLA
@@ -137,10 +137,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 1798
-    github_forks: 280
-    hf_downloads: 123
-    last_updated: '2026-10-11'
+    github_stars: 1808
+    github_forks: 282
+    hf_downloads: 134
+    last_updated: '2026-10-25'
   added_date: '2023-10-01'
   tags:
   - generalist
@@ -174,10 +174,10 @@
   communication:
   - ros1
   stats:
-    github_stars: 2265
-    github_forks: 426
+    github_stars: 2293
+    github_forks: 431
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2023-04-01'
   tags:
   - action-chunking
@@ -205,10 +205,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 4621
-    github_forks: 852
+    github_stars: 4683
+    github_forks: 859
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2023-03-07'
   tags:
   - diffusion
@@ -245,10 +245,10 @@
   communication:
   - ros1
   stats:
-    github_stars: 4473
-    github_forks: 732
+    github_stars: 4477
+    github_forks: 731
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2024-01-04'
   tags:
   - mobile-manipulation
@@ -289,7 +289,7 @@
     github_stars: 853
     github_forks: 121
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2024-06-14'
   tags:
   - humanoid-shadowing
@@ -327,10 +327,10 @@
   communication:
   - other
   stats:
-    github_stars: 8190
-    github_forks: 1488
-    hf_downloads: 434
-    last_updated: '2026-10-11'
+    github_stars: 8252
+    github_forks: 1504
+    hf_downloads: 430
+    last_updated: '2026-10-25'
   added_date: '2025-03-19'
   tags:
   - dual-system
@@ -368,7 +368,7 @@
     github_stars: 438
     github_forks: 36
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2023-11-02'
   tags:
   - VLM
@@ -403,7 +403,7 @@
     github_stars: 308
     github_forks: 15
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2024-01-01'
   tags:
   - video-generative-pretraining
@@ -431,10 +431,10 @@
   - jax
   communication: []
   stats:
-    github_stars: 283
+    github_stars: 285
     github_forks: 38
-    hf_downloads: 60
-    last_updated: '2026-10-11'
+    hf_downloads: 78
+    last_updated: '2026-10-25'
   added_date: '2024-08-21'
   tags:
   - cross-embodiment
@@ -467,10 +467,10 @@
   - pytorch
   communication: []
   stats:
-    github_stars: 486
-    github_forks: 24
+    github_stars: 489
+    github_forks: 25
     hf_downloads: 0
-    last_updated: '2026-10-11'
+    last_updated: '2026-10-25'
   added_date: '2026-05-17'
   tags:
   - vla-design-study
@@ -503,10 +503,10 @@
   communication:
   - other
   stats:
-    github_stars: 432
-    github_forks: 40
-    hf_downloads: 1112
-    last_updated: '2026-10-11'
+    github_stars: 434
+    github_forks: 42
+    hf_downloads: 955
+    last_updated: '2026-10-25'
   added_date: '2026-06-21'
   tags:
   - diffusion-transformer
@@ -549,10 +549,10 @@
   communication:
   - other
   stats:
-    github_stars: 108
+    github_stars: 110
     github_forks: 3
-    hf_downloads: 13
-    last_updated: '2026-10-11'
+    hf_downloads: 9
+    last_updated: '2026-10-25'
   added_date: '2026-07-26'
   tags:
   - VLA
@@ -596,10 +596,10 @@
   communication:
   - other
   stats:
-    github_stars: 1810
-    github_forks: 169
-    hf_downloads: 364
-    last_updated: '2026-10-11'
+    github_stars: 1815
+    github_forks: 171
+    hf_downloads: 309
+    last_updated: '2026-10-25'
   added_date: '2026-08-23'
   tags:
   - bimanual-manipulation
