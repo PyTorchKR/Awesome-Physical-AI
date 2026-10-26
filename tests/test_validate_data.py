@@ -6,6 +6,7 @@ Run with:
 """
 
 import pytest
+import yaml
 import validate_data as vd
 
 
@@ -85,6 +86,28 @@ def _minimal_tool(**overrides) -> dict:
     return base
 
 
+@pytest.fixture
+def run_validation(tmp_path, monkeypatch, capsys):
+    """Run the validator against isolated YAML files and capture its CLI output."""
+    monkeypatch.setattr(vd, "DATA_DIR", tmp_path)
+
+    def run(model: dict) -> tuple[int, str]:
+        entries_by_file = {
+            "models.yaml": [model],
+            "datasets.yaml": [_minimal_dataset()],
+            "tools.yaml": [_minimal_tool()],
+        }
+        for filename, entries in entries_by_file.items():
+            (tmp_path / filename).write_text(
+                yaml.safe_dump(entries, allow_unicode=True), encoding="utf-8"
+            )
+
+        exit_code = vd.main()
+        return exit_code, capsys.readouterr().out
+
+    return run
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # check_list_values
 # ─────────────────────────────────────────────────────────────────────────────
@@ -102,6 +125,80 @@ def test_check_list_values_unknown_value():
 
 def test_check_list_values_empty_list():
     vd.check_list_values("x", "categories", [], vd.VALID_CATEGORIES)
+    assert vd.errors == []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# benchmarks
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_benchmark_meta_matches_spec():
+    assert vd.BENCHMARK_META == {
+        "LIBERO_Spatial": {"metric": "success_rate", "scale": [0, 1]},
+        "LIBERO_Object": {"metric": "success_rate", "scale": [0, 1]},
+        "LIBERO_Goal": {"metric": "success_rate", "scale": [0, 1]},
+        "LIBERO_Long": {"metric": "success_rate", "scale": [0, 1]},
+        "SimplerEnv_VM": {"metric": "success_rate", "scale": [0, 1]},
+        "CALVIN_ACL": {"metric": "avg_chain_length", "scale": [0, 5]},
+    }
+
+
+def test_main_rejects_unknown_benchmark_key_with_id_and_key(run_validation):
+    exit_code, output = run_validation(
+        _minimal_model(id="typo-model", benchmarks={"LIBERO_Spatia": 0.847})
+    )
+
+    assert exit_code == 1
+    assert "typo-model" in output
+    assert "LIBERO_Spatia" in output
+
+
+def test_main_rejects_out_of_range_benchmark_with_scale(run_validation):
+    exit_code, output = run_validation(
+        _minimal_model(id="range-model", benchmarks={"CALVIN_ACL": 99.9})
+    )
+
+    assert exit_code == 1
+    assert "range-model" in output
+    assert "CALVIN_ACL" in output
+    assert "[0, 5]" in output
+
+
+def test_main_rejects_non_numeric_benchmark(run_validation):
+    exit_code, output = run_validation(
+        _minimal_model(id="type-model", benchmarks={"LIBERO_Object": "high"})
+    )
+
+    assert exit_code == 1
+    assert "type-model" in output
+    assert "LIBERO_Object" in output
+
+
+def test_main_accepts_model_without_benchmarks(run_validation):
+    exit_code, _ = run_validation(_minimal_model())
+
+    assert exit_code == 0
+
+
+def test_main_accepts_valid_benchmark(run_validation):
+    exit_code, _ = run_validation(
+        _minimal_model(benchmarks={"LIBERO_Spatial": 0.847})
+    )
+
+    assert exit_code == 0
+
+
+def test_benchmark_scale_boundaries_are_inclusive():
+    lower_bounds = {
+        key: meta["scale"][0] for key, meta in vd.BENCHMARK_META.items()
+    }
+    upper_bounds = {
+        key: meta["scale"][1] for key, meta in vd.BENCHMARK_META.items()
+    }
+
+    vd.validate_model(_minimal_model(benchmarks=lower_bounds))
+    vd.validate_model(_minimal_model(benchmarks=upper_bounds))
+
     assert vd.errors == []
 
 

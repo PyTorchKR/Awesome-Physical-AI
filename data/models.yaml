@@ -93,6 +93,11 @@
     모델.
   github_url: https://github.com/openvla/openvla
   paper_url: https://arxiv.org/abs/2406.09246
+  benchmarks:
+    LIBERO_Spatial: 0.847
+    LIBERO_Object: 0.884
+    LIBERO_Goal: 0.792
+    LIBERO_Long: 0.537
   hf_url: https://huggingface.co/openvla/openvla-7b
   project_url: https://openvla.github.io
   categories:
@@ -352,6 +357,8 @@
     CALVIN 벤치마크에서 SOTA 성능을 달성합니다.
   github_url: https://github.com/RoboFlamingo/RoboFlamingo
   paper_url: https://arxiv.org/abs/2311.01378
+  benchmarks:
+    CALVIN_ACL: 4.09
   hf_url: https://huggingface.co/robovlms/RoboFlamingo
   project_url: https://roboflamingo.github.io
   categories:
@@ -387,6 +394,8 @@
     시각 로봇 조작 모델. 미래 프레임 예측을 목표로 하며, 대규모 휴먼 비디오(Ego4D)로 생성형 모델을 사전학습한 뒤 로봇 데이터로 파인튜닝합니다.
   github_url: https://github.com/bytedance/GR-1
   paper_url: https://arxiv.org/abs/2312.13139
+  benchmarks:
+    CALVIN_ACL: 4.21
   hf_url: ''
   project_url: https://gr1-manipulation.github.io
   categories:
@@ -455,6 +464,8 @@
     그 결과를 새 VLM을 쉽게 통합하고 설계 요소를 자유롭게 조합할 수 있는 오픈소스 프레임워크 RoboVLMs로 공개했습니다.
   github_url: https://github.com/Robot-VLAs/RoboVLMs
   paper_url: https://arxiv.org/abs/2412.14058
+  benchmarks:
+    CALVIN_ACL: 4.49
   hf_url: https://huggingface.co/robovlms/RoboVLMs
   project_url: https://robovlms.github.io/
   categories:
