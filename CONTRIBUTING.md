@@ -128,9 +128,9 @@ YAML 파일 작성 시 아래 유효값만 사용해야 합니다.
 |------|--------|
 | `categories` | `manipulation` · `locomotion` · `navigation` · `dexterous` · `whole-body` · `aerial` · `underwater` |
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `underwater` · `hand` |
-| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` · `meta-learning` · `self-supervised` |
+| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` · `few-shot` |
 | `framework` | `pytorch` · `jax` · `tensorflow` · `mujoco` · `isaacgym` · `other` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
+| `communication` | `ros1` · `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **데이터셋**
 
@@ -276,9 +276,9 @@ Only the following values are valid in YAML files.
 |-------|-------------|
 | `categories` | `manipulation` · `locomotion` · `navigation` · `dexterous` · `whole-body` · `aerial` · `underwater` |
 | `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `underwater` · `hand` |
-| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` · `meta-learning` · `self-supervised` |
+| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` · `few-shot` |
 | `framework` | `pytorch` · `jax` · `tensorflow` · `mujoco` · `isaacgym` · `other` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
+| `communication` | `ros1` · `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 **Datasets**
 
