@@ -64,8 +64,10 @@ jobs:
           HF_TOKEN:     ${{ secrets.HF_TOKEN }}
         run: python scripts/process_issue.py
 
-      - name: Regenerate site data
-        run: python scripts/generate_site.py
+      # README.md and docs/ are not regenerated here: docs/index.html embeds the
+      # whole dataset on a single line, so committing it from every entry PR made
+      # concurrent PRs conflict as soon as one merged. build-site.yml rebuilds
+      # them on main after merge instead.
 
       # Keep the edit-* forms' ID dropdowns in step with the data, in this same
       # PR — that way a new entry is immediately selectable for later fixes.
@@ -94,7 +96,7 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add data/ docs/data.json docs/index.html README.md .github/ISSUE_TEMPLATE
+          git add data/ .github/ISSUE_TEMPLATE
           # Credit the issue author via a Co-authored-by trailer so they are counted
           # as a contributor once the PR is merged (survives squash merges too).
           git commit \

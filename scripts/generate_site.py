@@ -208,11 +208,11 @@ A bot will automatically create a PR from your issue for admin review.
 
 | Field | Valid Values |
 |-------|-------------|
-| `categories` | `manipulation` · `locomotion` · `navigation` · `dexterous` · `whole-body` · `aerial` |
-| `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `hand` |
-| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` |
-| `framework` | `pytorch` · `jax` · `tensorflow` |
-| `communication` | `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
+| `categories` | `manipulation` · `locomotion` · `navigation` · `dexterous` · `whole-body` · `aerial` · `underwater` |
+| `hardware` | `manipulator` · `humanoid` · `quadruped` · `biped` · `mobile` · `drone` · `underwater` · `hand` |
+| `learning` | `VLA` · `IL` · `RL` · `diffusion` · `world_model` · `sim2real` · `few-shot` |
+| `framework` | `pytorch` · `jax` · `tensorflow` · `mujoco` · `isaacgym` · `other` |
+| `communication` | `ros1` · `ros2` · `grpc` · `lcm` · `zenoh` · `other` |
 
 ### Datasets
 
