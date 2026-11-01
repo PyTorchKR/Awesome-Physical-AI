@@ -241,6 +241,7 @@ def test_fetch_arxiv_cs_ro_uses_submitted_date_range_and_max_results(monkeypatch
         <entry>
           <id>https://arxiv.org/abs/{arxiv_id}v2</id>
           <published>2026-06-24T00:00:00Z</published>
+          <updated>2026-06-25T00:00:00Z</updated>
           <title>Robot Policy {arxiv_id}</title>
           <summary>Robot manipulation paper. https://github.com/example/{arxiv_id}</summary>
           <author><name>Alice</name></author>
@@ -270,18 +271,200 @@ def test_fetch_arxiv_cs_ro_uses_submitted_date_range_and_max_results(monkeypatch
     assert calls[0]["max_results"] == 20
     assert calls[0]["search_query"].startswith("cat:cs.RO AND submittedDate:[")
     assert candidates[0].url == "https://arxiv.org/abs/2601.00001"
+    assert candidates[0].arxiv_version == "v2"
+    assert candidates[0].updated == "2026-06-25T00:00:00Z"
+
+
+def test_fetch_arxiv_cs_ro_warns_and_returns_truncated_result_set(monkeypatch, capsys):
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom"
+              xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+          <opensearch:totalResults>21</opensearch:totalResults>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(dn, "http_get", lambda *args, **kwargs: Response())
+
+    candidates = dn.fetch_arxiv_cs_ro(days=7, max_results=20)
+
+    assert candidates == []
+    assert "matched 21 papers; only the newest 20 are processed" in capsys.readouterr().err
+
+
+def test_fetch_arxiv_by_ids_requests_latest_versions(monkeypatch):
+    calls = []
+
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom"></feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    def fake_http_get(_url, *, params=None, **_kwargs):
+        calls.append(params)
+        return Response()
+
+    monkeypatch.setattr(dn, "http_get", fake_http_get)
+
+    assert dn.fetch_arxiv_by_ids(["2601.00001", "2601.00002"]) == []
+    assert calls[0]["id_list"] == "2601.00001,2601.00002"
+    assert calls[0]["max_results"] == 2
+
+
+def test_fetch_recent_arxiv_updates_filters_by_updated_date(monkeypatch):
+    calls = []
+
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <id>https://arxiv.org/abs/2601.00001v2</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-02-09T00:00:00Z</updated>
+            <title>Recent revision</title><summary>robot policy</summary>
+          </entry>
+          <entry>
+            <id>https://arxiv.org/abs/2601.00002v1</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-01-01T00:00:00Z</updated>
+            <title>Old paper</title><summary>robot policy</summary>
+          </entry>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    def fake_http_get(_url, *, params=None, **_kwargs):
+        calls.append(params)
+        return Response()
+
+    monkeypatch.setattr(dn, "http_get", fake_http_get)
+    recent = dn.fetch_recent_arxiv_updates(
+        days=7,
+        max_results=3,
+        now=dn.datetime(2026, 2, 10, tzinfo=dn.timezone.utc),
+    )
+
+    assert [candidate.title for candidate in recent] == ["Recent revision"]
+    assert calls[0]["sortBy"] == "lastUpdatedDate"
+
+
+def test_fetch_recent_arxiv_updates_warns_and_returns_truncated_results(monkeypatch, capsys):
+    class Response:
+        status_code = 200
+        headers = {}
+        text = """<?xml version="1.0" encoding="UTF-8"?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <entry>
+            <id>https://arxiv.org/abs/2601.00001v2</id>
+            <published>2026-01-01T00:00:00Z</published>
+            <updated>2026-02-09T00:00:00Z</updated>
+            <title>Recent revision</title><summary>robot policy</summary>
+          </entry>
+        </feed>"""
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(dn, "http_get", lambda *args, **kwargs: Response())
+
+    candidates = dn.fetch_recent_arxiv_updates(
+        days=7,
+        max_results=1,
+        now=dn.datetime(2026, 2, 10, tzinfo=dn.timezone.utc),
+    )
+
+    assert [candidate.title for candidate in candidates] == ["Recent revision"]
+    assert "older revisions in this window were not fetched" in capsys.readouterr().err
+
+
+def test_evaluate_candidates_skips_link_checks_for_rule_based_reject(monkeypatch):
+    monkeypatch.setattr(dn, "load_yaml_entries", lambda: [])
+
+    def unexpected_verify(_url):
+        raise AssertionError("verify_link should not be called")
+
+    monkeypatch.setattr(dn, "verify_link", unexpected_verify)
+    candidate = _candidate(
+        title="End-to-End Autonomous Driving Dataset",
+        summary="A traffic and lane detection benchmark for self driving.",
+        links=[
+            "https://arxiv.org/abs/2601.00001",
+            "https://github.com/example/driving",
+        ],
+    )
+
+    result = dn.evaluate_candidates([candidate], verify_links=True)
+
+    assert result[0].review_bucket == "reject"
+    assert result[0].checks[0].status == "not_checked"
+    assert result[0].checks[0].reason == "skipped: rule-based reject"
 
 
 def test_evaluate_candidates_runs_llm_review_command(monkeypatch):
     monkeypatch.setattr(dn, "load_yaml_entries", lambda: [])
-    candidate = _candidate()
+    monkeypatch.setattr(
+        dn,
+        "verify_link",
+        lambda url: dn.LinkCheck(url=url, kind=dn.classify_url(url), status="available"),
+    )
+    candidate = _candidate(links=[
+        "https://arxiv.org/abs/2601.00001",
+        "https://github.com/example/robot",
+    ])
     result = dn.evaluate_candidates(
         [candidate],
-        verify_links=False,
+        verify_links=True,
         llm_review_command="python3 -c \"import json; print(json.dumps({'decision':'reject','reason':'paper only'}))\"",
+        llm_review_mode="all",
     )
+    assert result[0].llm_review_selected is True
     assert result[0].llm_review["status"] == "ok"
     assert result[0].llm_review["decision"] == "reject"
+
+
+def test_all_llm_review_mode_only_selects_rule_eligible_candidates():
+    eligible = _candidate()
+    eligible.relevance = "high"
+    eligible.recommendation = "needs_review"
+    eligible.review_bucket = "normal"
+    eligible.artifact_availability = {"has_verified_model_link": True}
+
+    second_eligible = _candidate(title="Second eligible candidate")
+    second_eligible.relevance = "high"
+    second_eligible.recommendation = "needs_review"
+    second_eligible.review_bucket = "ambiguous"
+    second_eligible.artifact_availability = {"has_verified_code_link": True}
+
+    paper_only = _candidate(title="Paper only")
+    paper_only.relevance = "high"
+    paper_only.recommendation = "needs_review"
+    paper_only.review_bucket = "ambiguous"
+    paper_only.artifact_availability = {}
+
+    medium_relevance = _candidate(title="Medium relevance")
+    medium_relevance.relevance = "medium"
+    medium_relevance.recommendation = "needs_review"
+    medium_relevance.review_bucket = "ambiguous"
+    medium_relevance.artifact_availability = {"has_verified_code_link": True}
+
+    targets = dn.llm_review_targets(
+        [eligible, second_eligible, paper_only, medium_relevance],
+        llm_review_mode="all",
+        max_ambiguous=1,
+    )
+
+    assert targets == [eligible, second_eligible]
 
 
 def test_render_markdown_states_no_issues_created():
@@ -299,7 +482,7 @@ def test_render_markdown_states_no_issues_created():
     report = dn.render_markdown([candidate])
     assert "No GitHub issues were created" in report
     assert "Open Robot Manipulation Policy" in report
-    assert "Targeted for optional LLM review" in report
+    assert "Targeted for LLM review" in report
     assert "LLM decision" in report
     assert "LLM entry summary" in report
     assert "A public-facing summary." in report
