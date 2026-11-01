@@ -2,7 +2,12 @@
 Unit tests for scripts/validate_llm_metadata.py
 """
 
+import json
 import shutil
+from unittest.mock import Mock
+
+import pytest
+import requests
 from pathlib import Path
 
 import validate_llm_metadata as vlm
@@ -420,3 +425,65 @@ def test_extract_introduction_accepts_roman_numeral_section_number():
 
     assert introduction == "This paper introduces a policy for robot manipulation."
     
+
+
+@pytest.mark.parametrize("timeout_type", [requests.ReadTimeout, requests.ConnectTimeout])
+def test_gemini_timeout_retries_then_succeeds(monkeypatch, timeout_type):
+    sleep = Mock()
+    monkeypatch.setattr(vlm.time, "sleep", sleep)
+    response = Mock()
+    response.json.return_value = {
+        "candidates": [{"content": {"parts": [{"text": json.dumps({
+            "tag_score": 0.9,
+            "summary_score": 0.9,
+            "final_verdict": "pass",
+            "reason": "Supported by evidence",
+            "unsupported_tags": [],
+            "unsupported_claims": [],
+        })}]}}]
+    }
+    session = Mock()
+    session.post.side_effect = [timeout_type("timeout"), timeout_type("timeout"), response]
+    validator = vlm.GeminiValidator(api_key="test-key", session=session)
+
+    result = validator.validate("model", _entry(), vlm.EvidenceBundle())
+
+    assert result["final_verdict"] == "pass"
+    assert session.post.call_count == 3
+    assert [call.args[0] for call in sleep.call_args_list] == [1.0, 2.0]
+
+
+@pytest.mark.parametrize("timeout_type", [requests.ReadTimeout, requests.ConnectTimeout])
+def test_gemini_timeout_exhausted_becomes_warning(monkeypatch, timeout_type):
+    sleep = Mock()
+    monkeypatch.setattr(vlm.time, "sleep", sleep)
+    session = Mock()
+    session.post.side_effect = timeout_type("timeout")
+    validator = vlm.GeminiValidator(api_key="test-key", session=session)
+    fetcher = FakeFetcher({"test-entry": vlm.EvidenceBundle(readme_text="Evidence")})
+
+    result = vlm.validate_entry("model", _entry(), fetcher, validator)
+
+    assert session.post.call_count == 3
+    assert [call.args[0] for call in sleep.call_args_list] == [1.0, 2.0]
+    assert result.final_verdict == "warning"
+    assert "after 3 attempts (timeout)" in result.reason
+
+
+@pytest.mark.parametrize("status_code", [500, 504])
+def test_gemini_server_error_exhausted_becomes_warning(monkeypatch, status_code):
+    sleep = Mock()
+    monkeypatch.setattr(vlm.time, "sleep", sleep)
+    response = Mock(status_code=status_code)
+    response.raise_for_status.side_effect = requests.HTTPError(response=response)
+    session = Mock()
+    session.post.return_value = response
+    validator = vlm.GeminiValidator(api_key="test-key", session=session)
+    fetcher = FakeFetcher({"test-entry": vlm.EvidenceBundle(readme_text="Evidence")})
+
+    result = vlm.validate_entry("model", _entry(), fetcher, validator)
+
+    assert session.post.call_count == 3
+    assert [call.args[0] for call in sleep.call_args_list] == [1.0, 2.0]
+    assert result.final_verdict == "warning"
+    assert f"after 3 attempts (status {status_code})" in result.reason
