@@ -21,6 +21,14 @@ from typing import Any
 
 import requests
 
+from validate_data import (
+    VALID_CATEGORIES,
+    VALID_COMMUNICATION,
+    VALID_FRAMEWORK,
+    VALID_HARDWARE,
+    VALID_LEARNING,
+)
+
 
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODELS = {
@@ -37,11 +45,11 @@ VALID_ENTRY_TYPES = {
 }
 VALID_DECISIONS = {"accept", "needs_review", "reject"}
 ALLOWED_METADATA = {
-    "categories": {"manipulation", "locomotion", "navigation", "dexterous", "whole-body", "aerial"},
-    "hardware_targets": {"manipulator", "humanoid", "quadruped", "biped", "mobile", "drone", "hand"},
-    "learning_methods": {"VLA", "IL", "RL", "diffusion", "world_model", "sim2real"},
-    "framework": {"pytorch", "jax", "tensorflow", "other"},
-    "communication": {"ros2", "grpc", "lcm", "zenoh", "other"},
+    "categories": VALID_CATEGORIES,
+    "hardware_targets": VALID_HARDWARE,
+    "learning_methods": VALID_LEARNING,
+    "framework": VALID_FRAMEWORK,
+    "communication": VALID_COMMUNICATION,
 }
 
 REQUIRED_FIELDS = {
@@ -50,6 +58,7 @@ REQUIRED_FIELDS = {
     "entry_type": "unclear",
     "decision": "needs_review",
     "entry_summary": "",
+    "entry_summary_ko": "",
     "maintainer_summary": "",
     "reason": "",
     "model_name": "",
@@ -69,6 +78,7 @@ RESPONSE_SCHEMA = {
         "entry_type": {"type": "string", "enum": sorted(VALID_ENTRY_TYPES)},
         "decision": {"type": "string", "enum": sorted(VALID_DECISIONS)},
         "entry_summary": {"type": "string"},
+        "entry_summary_ko": {"type": "string"},
         "maintainer_summary": {"type": "string"},
         "reason": {"type": "string"},
         "model_name": {"type": "string"},
@@ -102,6 +112,7 @@ Rules:
 - If has_verified_model_link is false but official code is verified, describe it as a code-only model release rather than automatically requiring manual review.
 - Prefer needs_review over reject when the candidate is plausibly Physical AI but model/artifact availability is unclear.
 - entry_summary must be an evidence-based 2-3 sentence Awesome-list description and must not invent artifact availability.
+- entry_summary_ko must state the same content as entry_summary in natural Korean, keeping model names and technical terms in their original form.
 - maintainer_summary must be a concise 2-3 sentence note for the discovery report.
 - model_name and organization must be supported by the title or an official repository namespace; otherwise return an empty string.
 - Metadata arrays are PR preparation annotations. Select only explicitly supported schema values.
@@ -156,7 +167,7 @@ def normalize_review(review: dict[str, Any]) -> dict[str, Any]:
     if normalized.get("decision") not in VALID_DECISIONS:
         normalized["decision"] = "needs_review"
 
-    for field in ("entry_summary", "maintainer_summary", "reason", "model_name", "organization"):
+    for field in ("entry_summary", "entry_summary_ko", "maintainer_summary", "reason", "model_name", "organization"):
         normalized[field] = str(normalized.get(field) or "")
     for field, allowed in ALLOWED_METADATA.items():
         values = normalized.get(field)

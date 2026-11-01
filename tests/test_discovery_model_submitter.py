@@ -2,6 +2,7 @@ import json
 
 import discovery_model_submitter as submitter
 import process_issue
+import validate_data
 
 
 def candidate(**overrides):
@@ -141,6 +142,31 @@ def test_llm_metadata_is_used_only_after_enum_filtering():
     assert submission.learning_methods == ("IL",)
     assert submission.framework == ("pytorch",)
     assert submission.communication == ("ros2",)
+
+
+def test_submitter_taxonomy_matches_validate_data():
+    assert set(submitter.VALID_CATEGORIES) == validate_data.VALID_CATEGORIES
+    assert set(submitter.VALID_HARDWARE) == validate_data.VALID_HARDWARE
+    assert set(submitter.VALID_LEARNING) == validate_data.VALID_LEARNING
+    assert set(submitter.VALID_FRAMEWORK) == validate_data.VALID_FRAMEWORK
+    assert set(submitter.VALID_COMMUNICATION) == validate_data.VALID_COMMUNICATION
+
+
+def test_issue_includes_korean_summary_from_llm():
+    llm_review = {
+        "status": "ok",
+        "decision": "accept",
+        "entry_type": "model",
+        "entry_summary": "An evidence-based model summary.",
+        "entry_summary_ko": "근거 기반 모델 요약입니다.",
+    }
+
+    submission, reasons = submitter.build_model_submission(candidate(llm_review=llm_review))
+
+    assert submission is not None and not reasons
+    assert submission.description_ko == "근거 기반 모델 요약입니다."
+    form = process_issue.parse_form(submitter.render_add_model_issue(submission))
+    assert form["description_korean"] == "근거 기반 모델 요약입니다."
 
 
 def test_submission_requires_successful_llm_acceptance():
