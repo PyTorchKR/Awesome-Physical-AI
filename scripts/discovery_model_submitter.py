@@ -31,11 +31,12 @@ from discover_weekly import (
 GITHUB_API_URL = "https://api.github.com"
 DISCOVERY_MARKER_RE = re.compile(r"<!--\s*discovery-key:\s*(.+?)\s*-->")
 
-VALID_CATEGORIES = ("manipulation", "locomotion", "navigation", "dexterous", "whole-body", "aerial")
-VALID_HARDWARE = ("manipulator", "humanoid", "quadruped", "biped", "mobile", "drone", "hand")
-VALID_LEARNING = ("VLA", "IL", "RL", "diffusion", "world_model", "sim2real")
-VALID_FRAMEWORK = ("pytorch", "jax", "tensorflow", "other")
-VALID_COMMUNICATION = ("ros2", "grpc", "lcm", "zenoh", "other")
+# Ordered as in the add-model issue form; tests keep the values in step with validate_data.py.
+VALID_CATEGORIES = ("manipulation", "locomotion", "navigation", "dexterous", "whole-body", "aerial", "underwater")
+VALID_HARDWARE = ("manipulator", "humanoid", "quadruped", "biped", "mobile", "drone", "underwater", "hand")
+VALID_LEARNING = ("VLA", "IL", "RL", "diffusion", "world_model", "sim2real", "few-shot")
+VALID_FRAMEWORK = ("pytorch", "jax", "tensorflow", "mujoco", "isaacgym", "other")
+VALID_COMMUNICATION = ("ros1", "ros2", "grpc", "lcm", "zenoh", "other")
 
 CATEGORY_TERMS = {
     "manipulation": ("manipulation", "manipulator", "grasp", "insertion", "pick-and-place", "bimanual"),
@@ -44,6 +45,7 @@ CATEGORY_TERMS = {
     "dexterous": ("dexterous", "in-hand", "in hand manipulation"),
     "whole-body": ("whole-body", "whole body"),
     "aerial": ("aerial", "drone", "quadrotor", "uav"),
+    "underwater": ("underwater",),
 }
 HARDWARE_TERMS = {
     "manipulator": ("manipulation", "manipulator", "robot arm", "grasp", "insertion", "bimanual"),
@@ -52,6 +54,7 @@ HARDWARE_TERMS = {
     "biped": ("biped",),
     "mobile": ("navigation", "vln", "mobile robot"),
     "drone": ("drone", "aerial", "quadrotor", "uav"),
+    "underwater": ("underwater",),
     "hand": ("dexterous", "robot hand", "in-hand"),
 }
 LEARNING_TERMS = {
@@ -61,13 +64,17 @@ LEARNING_TERMS = {
     "diffusion": ("diffusion",),
     "world_model": ("world model",),
     "sim2real": ("sim-to-real", "sim to real", "sim2real"),
+    "few-shot": ("few-shot", "few shot"),
 }
 FRAMEWORK_TERMS = {
     "pytorch": ("pytorch",),
     "jax": ("jax",),
     "tensorflow": ("tensorflow",),
+    "mujoco": ("mujoco",),
+    "isaacgym": ("isaac gym", "isaacgym"),
 }
 COMMUNICATION_TERMS = {
+    "ros1": ("ros1", "ros 1"),
     "ros2": ("ros2", "ros 2"),
     "grpc": ("grpc",),
     "lcm": ("lightweight communications and marshalling", "lcm"),
@@ -199,6 +206,13 @@ def derive_description(candidate: dict[str, Any]) -> str:
     return " ".join(sentences[:2])[:700].strip()
 
 
+def derive_description_ko(candidate: dict[str, Any]) -> str:
+    llm_review = candidate.get("llm_review") or {}
+    if llm_review.get("status") != "ok":
+        return ""
+    return clean_text(llm_review.get("entry_summary_ko"), limit=700)
+
+
 def build_model_submission(candidate: dict[str, Any]) -> tuple[ModelSubmission | None, list[str]]:
     reasons: list[str] = []
     availability = candidate.get("artifact_availability") or {}
@@ -299,7 +313,7 @@ def build_model_submission(candidate: dict[str, Any]) -> tuple[ModelSubmission |
         organization=organization,
         year=year,
         description_en=description_en,
-        description_ko="",
+        description_ko=derive_description_ko(candidate),
         github_url=github_url,
         paper_url=paper_url,
         huggingface_url=huggingface_url,

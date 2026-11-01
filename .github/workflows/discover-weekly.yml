@@ -30,7 +30,7 @@ on:
       llm_provider:
         description: "LLM reviewer provider for manual runs"
         required: true
-        default: "openrouter"
+        default: "gemini"
         type: choice
         options:
           - "openrouter"
@@ -64,8 +64,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install optional Gemini reviewer dependency
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_review_mode != 'off' && inputs.llm_provider == 'gemini' }}
+      - name: Install Gemini reviewer dependency
+        if: ${{ github.event_name == 'schedule' || (inputs.llm_review_mode != 'off' && inputs.llm_provider == 'gemini') }}
         run: pip install -U google-genai
 
       - name: Restore seen cache
@@ -80,13 +80,13 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          DISCOVERY_BOT_TOKEN: ${{ secrets.DISCOVERY_BOT_TOKEN }}
+          DISCOVERY_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           # Used only for authenticated public-repository link verification.
           GITHUB_TOKEN: ${{ github.token }}
           SUBMIT_MODE: ${{ github.event_name == 'schedule' || inputs.submit_models == 'true' }}
           # Scheduled runs review every candidate that passes the deterministic submission rules.
           LLM_REVIEW_MODE: ${{ github.event_name == 'schedule' && 'all' || inputs.llm_review_mode || 'off' }}
-          LLM_PROVIDER: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_provider || 'openrouter' }}
+          LLM_PROVIDER: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_provider || 'gemini' }}
           LLM_MODEL: ${{ github.event_name == 'workflow_dispatch' && inputs.llm_model || '' }}
           MAX_AMBIGUOUS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_ambiguous || '5' }}
         run: |
@@ -131,7 +131,7 @@ jobs:
             echo "Manual report-only run; seen-cache will not be updated."
             ARGS+=(--no-update-seen-cache)
           elif [ -z "$DISCOVERY_BOT_TOKEN" ]; then
-            echo "::warning::DISCOVERY_BOT_TOKEN is not configured; candidates will not be cached so a later run can retry submission."
+            echo "::warning::The BOT_TOKEN secret is not configured; candidates will not be cached so a later run can retry submission."
             ARGS+=(--no-update-seen-cache)
           fi
 
@@ -150,13 +150,13 @@ jobs:
         env:
           # A normal GITHUB_TOKEN cannot trigger process-issue.yml from a created
           # issue. Use a fine-grained PAT or GitHub App token with issues:write.
-          DISCOVERY_BOT_TOKEN: ${{ secrets.DISCOVERY_BOT_TOKEN }}
+          DISCOVERY_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           MAX_SUBMISSIONS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_submissions || '3' }}
           SOURCE_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ -z "$DISCOVERY_BOT_TOKEN" ]; then
-            echo "::warning::Skipping Add a Model submission because DISCOVERY_BOT_TOKEN is not configured."
+            echo "::warning::Skipping Add a Model submission because the BOT_TOKEN secret is not configured."
             echo "::warning::Do not replace it with GITHUB_TOKEN; GitHub suppresses workflow runs caused by GITHUB_TOKEN events."
             exit 0
           fi
