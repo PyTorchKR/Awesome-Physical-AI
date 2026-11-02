@@ -605,3 +605,40 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: star
+  name: STAR
+  org: PKU-VaLuE-Lab
+  year: 2026
+  description_en: STAR is a training-free inference method for vision-language-action
+    models (VLAs) that steers action representations to improve task-relevant visual
+    grounding. It applies an exponential moving average over late-layer residual updates
+    and uses proprioceptive states to adapt mixing strengths. The official implementation
+    is available open-source.
+  description_ko: STAR는 비전-언어-액션 모델(VLA)을 위한 학습 없는 추론 방법으로, 작업 관련 시각적 그라운딩을 향상시키기
+    위해 액션 표현을 조절합니다. 이 방법은 후반부 레이어 잔차 업데이트에 지수 이동 평균을 적용하고 프롭리오셉티브 상태를 사용하여 믹싱 강도를
+    적응시킵니다. 공식 코드는 오픈소스로 제공됩니다.
+  github_url: https://github.com/PKU-VaLuE-Lab/STAR
+  paper_url: https://arxiv.org/abs/2610.41009
+  hf_url: ''
+  project_url: ''
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-02'
+  added_date: '2026-11-02'
+  tags:
+  - manipulation
+  - robot
+  - robotic
+  - vision language action
+  - vla
