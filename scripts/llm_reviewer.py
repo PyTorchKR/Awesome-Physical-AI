@@ -68,6 +68,7 @@ REQUIRED_FIELDS = {
     "learning_methods": [],
     "framework": [],
     "communication": [],
+    "tags": [],
 }
 
 RESPONSE_SCHEMA = {
@@ -87,6 +88,7 @@ RESPONSE_SCHEMA = {
             field: {"type": "array", "items": {"type": "string", "enum": sorted(values)}}
             for field, values in ALLOWED_METADATA.items()
         },
+        "tags": {"type": "array", "items": {"type": "string"}},
     },
     "required": list(REQUIRED_FIELDS),
 }
@@ -111,8 +113,9 @@ Rules:
 - Do not treat a generic project page as a verified model release unless artifact_availability explicitly shows a verified model/code/dataset/space artifact link.
 - If has_verified_model_link is false but official code is verified, describe it as a code-only model release rather than automatically requiring manual review.
 - Prefer needs_review over reject when the candidate is plausibly Physical AI but model/artifact availability is unclear.
-- entry_summary must be an evidence-based 2-3 sentence Awesome-list description and must not invent artifact availability.
-- entry_summary_ko must state the same content as entry_summary in natural Korean, keeping model names and technical terms in their original form.
+- entry_summary must be an evidence-based 2-3 sentence Awesome-list description of what the model is and its distinctive technical contribution. Do not add generic statements such as code, weights, or open-source availability.
+- entry_summary_ko must state the same content as entry_summary in natural Korean. Use an established Korean term only when one exists; otherwise keep the English term as written (e.g. proprioceptive) and never transliterate it into Hangul (e.g. not 프롭리오셉티브).
+- tags must be 3-6 lowercase kebab-case tags naming the model's distinctive techniques or components (e.g. flow-matching, action-chunking). Do not use generic words such as robot, robotics, or embodied, or values that belong in the metadata arrays.
 - maintainer_summary must be a concise 2-3 sentence note for the discovery report.
 - model_name and organization must be supported by the title or an official repository namespace; otherwise return an empty string.
 - Metadata arrays are PR preparation annotations. Select only explicitly supported schema values.
@@ -172,6 +175,8 @@ def normalize_review(review: dict[str, Any]) -> dict[str, Any]:
     for field, allowed in ALLOWED_METADATA.items():
         values = normalized.get(field)
         normalized[field] = [value for value in values if value in allowed] if isinstance(values, list) else []
+    tags = normalized.get("tags")
+    normalized["tags"] = [str(tag) for tag in tags if tag] if isinstance(tags, list) else []
 
     normalized["status"] = "ok"
     return normalized

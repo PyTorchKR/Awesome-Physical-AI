@@ -80,6 +80,11 @@ COMMUNICATION_TERMS = {
     "lcm": ("lightweight communications and marshalling", "lcm"),
     "zenoh": ("zenoh",),
 }
+GENERIC_TAGS = {
+    "robot", "robots", "robotic", "robotics", "embodied", "embodied-ai", "embodiment",
+    "physical-ai", "ai", "model", "deep-learning", "machine-learning",
+}
+MAX_TAGS = 6
 
 
 @dataclass(frozen=True)
@@ -213,6 +218,24 @@ def derive_description_ko(candidate: dict[str, Any]) -> str:
     return clean_text(llm_review.get("entry_summary_ko"), limit=700)
 
 
+def normalize_tag(value: Any) -> str:
+    return re.sub(r"[\s_]+", "-", clean_text(value, limit=50).lower()).strip("-")
+
+
+def derive_tags(candidate: dict[str, Any]) -> tuple[str, ...]:
+    """Keep LLM-selected tags that say something the metadata fields do not."""
+    llm_review = candidate.get("llm_review") or {}
+    if llm_review.get("status") != "ok" or not isinstance(llm_review.get("tags"), list):
+        return ()
+    excluded = GENERIC_TAGS | {
+        normalize_tag(value)
+        for values in (VALID_CATEGORIES, VALID_HARDWARE, VALID_LEARNING, VALID_FRAMEWORK, VALID_COMMUNICATION)
+        for value in values
+    }
+    tags = (normalize_tag(tag) for tag in llm_review["tags"])
+    return tuple(dict.fromkeys(tag for tag in tags if tag and tag not in excluded))[:MAX_TAGS]
+
+
 def build_model_submission(candidate: dict[str, Any]) -> tuple[ModelSubmission | None, list[str]]:
     reasons: list[str] = []
     availability = candidate.get("artifact_availability") or {}
@@ -300,7 +323,6 @@ def build_model_submission(candidate: dict[str, Any]) -> tuple[ModelSubmission |
     if reasons:
         return None, reasons
 
-    tags = tuple(dict.fromkeys(clean_text(hit, limit=50) for hit in candidate.get("keyword_hits") or [] if hit))
     evidence = tuple(str(reason) for reason in candidate.get("reasons") or [])
     source_run = clean_text(candidate.get("source_run"), limit=500)
     if source_run:
@@ -323,7 +345,7 @@ def build_model_submission(candidate: dict[str, Any]) -> tuple[ModelSubmission |
         learning_methods=learning,
         framework=framework,
         communication=communication,
-        tags=tags[:12],
+        tags=derive_tags(candidate),
         evidence=evidence,
     ), []
 

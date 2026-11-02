@@ -169,6 +169,28 @@ def test_issue_includes_korean_summary_from_llm():
     assert form["description_korean"] == "근거 기반 모델 요약입니다."
 
 
+def test_tags_come_from_llm_without_generic_or_metadata_values():
+    llm_review = {
+        "status": "ok",
+        "decision": "accept",
+        "entry_type": "model",
+        "tags": ["Flow Matching", "robot", "Robotics", "VLA", "world_model", "action_chunking", "flow-matching"],
+    }
+
+    submission, reasons = submitter.build_model_submission(candidate(llm_review=llm_review))
+
+    assert submission is not None and not reasons
+    assert submission.tags == ("flow-matching", "action-chunking")
+
+
+def test_tags_stay_empty_without_llm_tags():
+    submission, reasons = submitter.build_model_submission(candidate())
+
+    assert submission is not None and not reasons
+    assert submission.tags == ()
+    assert "### Tags (optional)\n_No response_" in submitter.render_add_model_issue(submission)
+
+
 def test_submission_requires_successful_llm_acceptance():
     failed, failed_reasons = submitter.build_model_submission(
         candidate(llm_review={"status": "error", "reason": "provider timeout", "entry_type": "model"})
