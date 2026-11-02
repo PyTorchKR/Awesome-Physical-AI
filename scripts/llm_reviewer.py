@@ -4,7 +4,7 @@ The script reads one candidate JSON object from stdin and writes one normalized
 review JSON object to stdout. Provider and model selection are configuration:
 
     python scripts/llm_reviewer.py --provider openrouter --model openrouter/free
-    python scripts/llm_reviewer.py --provider gemini --model gemini-2.5-flash-lite
+    python scripts/llm_reviewer.py --provider gemini --model gemini-3.5-flash-lite
 
 When flags are omitted, ``LLM_PROVIDER``/``LLM_MODEL`` and then provider-specific
 model environment variables are used. Adding a new model within a supported
@@ -33,7 +33,7 @@ from validate_data import (
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODELS = {
     "openrouter": "openrouter/free",
-    "gemini": "gemini-2.5-flash-lite",
+    "gemini": "gemini-3.5-flash-lite",
 }
 API_KEY_ENV = {
     "openrouter": "OPENROUTER_API_KEY",
