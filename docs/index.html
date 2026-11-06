@@ -169,6 +169,31 @@
     </div>
   </div>
 
+  <!-- ──────────── BENCHMARK SCORES ──────────── -->
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 mb-6" x-show="benchKeys().length">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3" x-text="lang === 'ko' ? '벤치마크 점수' : 'Benchmark scores'"></h3>
+    <div class="flex flex-wrap gap-1.5 mb-3" role="group" :aria-label="lang === 'ko' ? '벤치마크 선택' : 'Choose a benchmark'">
+      <template x-for="k in benchKeys()" :key="k">
+        <button type="button" @click="benchKey = k; buildBenchChart()" :aria-pressed="(benchKey === k).toString()"
+                :class="benchKey === k ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+                class="text-xs px-2.5 py-1 rounded-full font-medium transition-colors">
+          <span x-text="benchLabel(k)"></span> <span class="opacity-70" x-text="benchCount(k) + (lang === 'ko' ? '개' : '')"></span>
+        </button>
+      </template>
+    </div>
+    <div class="flex justify-between gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
+      <span x-text="benchMetaText()"></span>
+      <span class="tabular-nums whitespace-nowrap" x-text="lang === 'ko' ? models.length + '개 모델 중 ' + benchCount(benchKey) + '개' : benchCount(benchKey) + ' of ' + models.length + ' models'"></span>
+    </div>
+    <div class="relative h-64 md:h-80">
+      <canvas id="benchChart" role="img"></canvas>
+      <div id="benchEmpty" class="hidden absolute inset-0 grid place-items-center rounded-lg border border-dashed border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"
+           x-text="lang === 'ko' ? '아직 점수가 등록된 모델이 없습니다' : 'No scores registered yet'"></div>
+    </div>
+    <p id="benchSpill" class="text-xs text-gray-600 dark:text-gray-300 mt-2 empty:hidden"></p>
+    <p id="benchCap" class="text-xs text-gray-500 dark:text-gray-400 mt-1 empty:hidden"></p>
+  </div>
+
   <!-- Tab: Models / Datasets -->
   <div class="flex gap-2 mb-6">
     <button @click="activeTab = 'models'"
@@ -601,6 +626,8 @@ function app() {
     models: [],
     datasets: [],
     tools: [],
+    benchmarkMeta: {},
+    benchKey: 'CALVIN_ACL',
 
     // Filters
     filters: { years: [], categories: [], hardware: [], learning: [], sources: [], toolTypes: [] },
@@ -849,12 +876,124 @@ function app() {
       });
     },
 
+    // ── Benchmark scores: one dot per model, placed by paper month ──
+    benchKeys() { return Object.keys(this.benchmarkMeta || {}); },
+    benchCount(k) { return this.models.filter(m => m.benchmarks && m.benchmarks[k] != null).length; },
+    benchLabel(k) { return k === 'CALVIN_ACL' ? 'CALVIN' : k.replace(/_/g, ' '); },
+    benchMetaText() {
+      const m = (this.benchmarkMeta || {})[this.benchKey]; if (!m) return '';
+      const ko = this.lang === 'ko';
+      const unit = m.metric === 'avg_chain_length' ? (ko ? '연속 성공 과제 수 · 최대 5개' : 'Tasks done in a row · max 5') : (ko ? '성공률' : 'Success rate');
+      return this.benchLabel(this.benchKey) + ' · ' + unit;
+    },
+    buildBenchChart() {
+      if (typeof Chart === 'undefined') return;
+      const canvas = document.getElementById('benchChart'); if (!canvas) return;
+      const prev = Chart.getChart(canvas); if (prev) prev.destroy();
+      const key = this.benchKey, meta = (this.benchmarkMeta || {})[key], ko = this.lang === 'ko', dark = this.darkMode;
+      const capEl = document.getElementById('benchCap'), spillEl = document.getElementById('benchSpill'), emptyEl = document.getElementById('benchEmpty');
+      capEl.textContent = ''; spillEl.textContent = '';
+
+      // x = paper month, read from the arXiv id in paper_url (models.yaml has no month field)
+      const arx = url => { const m = /arxiv\.org\/(?:abs|pdf)\/(\d{2})(\d{2})\.(\d{4,5})/.exec(url || ''); return m ? { t: (+m[1]) * 12 + (+m[2]) - 1, seq: +m[3] } : null; };
+      const pts = []; let noDate = 0;
+      for (const mo of this.models) {
+        const v = mo.benchmarks && mo.benchmarks[key]; if (v == null) continue;
+        const d = arx(mo.paper_url); if (!d) { noDate++; continue; }
+        pts.push({ x: d.t, y: v, seq: d.seq, name: mo.name });
+      }
+      pts.sort((a, b) => a.x - b.x || a.seq - b.seq);
+      emptyEl.classList.toggle('hidden', pts.length > 0); canvas.classList.toggle('invisible', pts.length === 0);
+      if (!pts.length || !meta) return;
+
+      // values stay raw: success_rate 0–1 shown as %, CALVIN avg_chain_length 0–5 shown as is (D-003)
+      const pct = meta.metric !== 'avg_chain_length', [s0, s1] = meta.scale || [0, pct ? 1 : 5], step = pct ? 0.1 : 0.2;
+      const fmt = v => pct ? (v * 100).toFixed(1) + '%' : v.toFixed(2), tick = v => pct ? Math.round(v * 100) + '%' : (+v).toFixed(1);
+      const fmtLong = v => pct ? (ko ? '성공률 ' : 'Success rate ') + fmt(v) : (ko ? `${s1}개 중 평균 ${v.toFixed(2)}개 성공` : `avg ${v.toFixed(2)} of ${s1} tasks in a row`);
+      const month = t => `${2000 + Math.floor(t / 12)}.${String(t % 12 + 1).padStart(2, '0')}`;
+      const monthLong = t => ko ? `${2000 + Math.floor(t / 12)}년 ${t % 12 + 1}월` : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][t % 12] + ' ' + (2000 + Math.floor(t / 12));
+
+      // with 2+ points the y axis is cropped to the data (snapped to the tick step) and the caption says so
+      let yMin = s0, yMax = s1;
+      if (pts.length >= 2) {
+        const lo = Math.min(...pts.map(p => p.y)), hi = Math.max(...pts.map(p => p.y)), pad = Math.max((hi - lo) * 0.25, (s1 - s0) * 0.02);
+        yMin = Math.max(s0, +(Math.floor((lo - pad) / step + 1e-9) * step).toFixed(2));
+        yMax = Math.min(s1, +(Math.ceil((hi + pad) / step - 1e-9) * step).toFixed(2));
+      }
+      const notes = [];
+      if (yMin > s0) notes.push(ko ? `세로축이 ${tick(yMin)}부터 시작해서 차이가 실제보다 크게 보입니다` : `The axis starts at ${tick(yMin)}, so gaps look larger than they are`);
+      if (noDate) notes.push(ko ? `arXiv 번호가 없는 ${noDate}개는 날짜를 알 수 없어 빠졌습니다` : `${noDate} without an arXiv id are left out (no date)`);
+      capEl.textContent = notes.join(' · ');
+
+      const C = dark ? { card: '#111827', text: '#f3f4f6', muted: '#9ca3af', grid: 'rgba(255,255,255,0.08)', dot: '#818cf8' }
+                     : { card: '#ffffff', text: '#111827', muted: '#6b7280', grid: 'rgba(0,0,0,0.06)', dot: '#6366f1' };
+      const FONT = getComputedStyle(document.body).fontFamily, fs = 12;
+      const xs = pts.map(p => p.x), xMin = Math.min(...xs) - 2, xMax = Math.max(...xs) + 2;
+
+      // each dot gets its name beside it; a name that fits nowhere is listed under the chart instead
+      const ov = (a, b) => !(a.x2 <= b.x1 || b.x2 <= a.x1 || a.y2 <= b.y1 || b.y2 <= a.y1);
+      const names = {
+        id: 'benchNames',
+        resize(chart) { chart.$place = null; },
+        afterDatasetsDraw(chart) {
+          const { ctx, chartArea: a } = chart, els = chart.getDatasetMeta(0).data;
+          if (!chart.$place) {
+            const R = 5, obst = els.map(el => ({ x1: el.x - R - 3, y1: el.y - R - 3, x2: el.x + R + 3, y2: el.y + R + 3 }));
+            const inside = b => b.x1 >= a.left - 2 && b.x2 <= a.right + 2 && b.y1 >= a.top - 16 && b.y2 <= a.bottom + 2;
+            const placed = [], spill = [];
+            for (const j of pts.map((p, j) => j).sort((u, v) => pts[v].y - pts[u].y)) {
+              const p = pts[j], el = els[j];
+              ctx.font = `600 ${fs}px ${FONT}`; const wN = ctx.measureText(p.name).width;
+              ctx.font = `400 ${fs}px ${FONT}`; const w = wN + 5 + ctx.measureText(fmt(p.y)).width, h = fs + 4, D = R + 6;
+              let got = null;
+              for (const c of [[D, -h / 2], [-D - w, -h / 2], [-w / 2, -D - h], [-w / 2, D], [D, D - 2], [-D - w, D - 2], [D, -D - h + 2], [-D - w, -D - h + 2]]) {
+                const b = { x1: el.x + c[0], y1: el.y + c[1], x2: el.x + c[0] + w, y2: el.y + c[1] + h };
+                if (inside(b) && !obst.some(o => ov(b, o)) && !placed.some(o => ov(b, o.b))) { got = b; break; }
+              }
+              if (got) placed.push({ p, b: got, wN }); else spill.push(p);
+            }
+            chart.$place = placed;
+            spillEl.textContent = spill.length ? (ko ? '그래프에 이름이 안 들어간 모델: ' : 'Not labeled on the chart: ') + spill.map(p => `${p.name} ${fmt(p.y)}`).join(' · ') : '';
+          }
+          ctx.save(); ctx.textBaseline = 'top';
+          for (const L of chart.$place) {
+            ctx.font = `600 ${fs}px ${FONT}`; ctx.fillStyle = C.text; ctx.fillText(L.p.name, L.b.x1, L.b.y1 + 2);
+            ctx.font = `400 ${fs}px ${FONT}`; ctx.fillStyle = C.muted; ctx.fillText(fmt(L.p.y), L.b.x1 + L.wN + 5, L.b.y1 + 2);
+          }
+          ctx.restore();
+        }
+      };
+
+      new Chart(canvas, {
+        type: 'scatter',
+        data: { datasets: [{ data: pts.map(p => ({ x: p.x, y: p.y, p })), pointRadius: 5, pointHoverRadius: 7, pointHitRadius: 10,
+                             backgroundColor: C.dot, borderColor: C.card, borderWidth: 2, clip: false }] },
+        options: {
+          animation: false, maintainAspectRatio: false, responsive: true,
+          layout: { padding: { top: 22, right: 18 } },
+          interaction: { mode: 'point', intersect: true },
+          plugins: { legend: { display: false }, tooltip: { callbacks: {
+            title: items => items.length ? (ko ? `${monthLong(items[0].raw.x)} 논문` : `Paper · ${monthLong(items[0].raw.x)}`) : '',
+            label: it => `${it.raw.p.name} · ${fmtLong(it.raw.y)}` } } },
+          scales: {
+            x: { type: 'linear', min: xMin, max: xMax, grid: { color: C.grid }, border: { display: false },
+                 afterBuildTicks: s => { const q = []; for (let v = Math.ceil(xMin / 3) * 3; v <= xMax; v += 3) q.push({ value: v }); s.ticks = q; },
+                 ticks: { color: C.muted, font: { size: 11 }, callback: v => month(v), maxRotation: 0 },
+                 title: { display: true, text: ko ? '논문이 나온 달' : 'Paper month', color: C.muted, font: { size: 11 } } },
+            y: { min: yMin, max: yMax, grid: { color: C.grid }, border: { display: false },
+                 ticks: { color: C.muted, font: { size: 11 }, stepSize: pts.length >= 2 ? step : (pct ? 0.2 : 1), callback: v => tick(v) } } } },
+        plugins: [names],
+      });
+      canvas.setAttribute('aria-label', this.benchMetaText() + ': ' + pts.map(p => `${p.name} ${fmtLong(p.y)} (${monthLong(p.x)})`).join(', '));
+    },
+
     // ── Init ──
     async init() {
       this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
       this.$watch('models', () => { if (this.models.length > 0) setTimeout(() => this.buildCharts(), 0); });
-      this.$watch('darkMode', () => { if (this.models.length > 0) setTimeout(() => this.buildCharts(), 0); });
+      this.$watch('darkMode', () => { if (this.models.length > 0) setTimeout(() => { this.buildCharts(); this.buildBenchChart(); }, 0); });
+      this.$watch('lang', () => { if (this.models.length > 0) setTimeout(() => this.buildBenchChart(), 0); });
 
       try {
         const data = window.__PHYSICAL_AI_DATA__
@@ -863,6 +1002,10 @@ function app() {
         this.models = data.models || [];
         this.datasets = data.datasets || [];
         this.tools = data.tools || [];
+        this.benchmarkMeta = data.benchmark_meta || {};
+        const keys = Object.keys(this.benchmarkMeta);
+        if (keys.length) this.benchKey = keys.reduce((a, b) => this.benchCount(b) > this.benchCount(a) ? b : a, keys[0]);
+        setTimeout(() => this.buildBenchChart(), 0);
       } catch (e) {
         console.error('Failed to load data:', e);
       }

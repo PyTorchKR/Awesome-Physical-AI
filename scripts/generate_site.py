@@ -13,6 +13,7 @@ from datetime import date
 from pathlib import Path
 
 import yaml
+from validate_data import BENCHMARK_META
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
@@ -240,6 +241,7 @@ def generate_data_json(models: list[dict], datasets: list[dict], tools: list[dic
             "total_tools": len(tools),
             "total_orgs": len({m["org"] for m in models} | {d["org"] for d in datasets} | {t["org"] for t in tools}),
         },
+        "benchmark_meta": BENCHMARK_META,
         "models": models,
         "datasets": datasets,
         "tools": tools,
