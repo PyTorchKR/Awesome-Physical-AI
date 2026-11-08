@@ -18,8 +18,8 @@
   - python
   - c++
   stats:
-    github_stars: 15597
-    last_updated: '2026-10-11'
+    github_stars: 16010
+    last_updated: '2026-11-01'
   added_date: '2022-10-18'
   tags:
   - physics-engine
@@ -45,8 +45,8 @@
   language:
   - python
   stats:
-    github_stars: 8315
-    last_updated: '2026-10-11'
+    github_stars: 8547
+    last_updated: '2026-11-01'
   added_date: '2023-05-01'
   tags:
   - simulation
@@ -72,8 +72,8 @@
   language:
   - python
   stats:
-    github_stars: 30039
-    last_updated: '2026-10-11'
+    github_stars: 30147
+    last_updated: '2026-11-01'
   added_date: '2024-12-01'
   tags:
   - simulation
@@ -98,8 +98,8 @@
   language:
   - python
   stats:
-    github_stars: 1174
-    last_updated: '2026-10-11'
+    github_stars: 1181
+    last_updated: '2026-11-01'
   added_date: '2024-05-09'
   tags:
   - benchmark
@@ -125,8 +125,8 @@
   language:
   - python
   stats:
-    github_stars: 2650
-    last_updated: '2026-10-11'
+    github_stars: 2691
+    last_updated: '2026-11-01'
   added_date: '2020-09-25'
   tags:
   - benchmark
@@ -151,8 +151,8 @@
   language:
   - python
   stats:
-    github_stars: 1796
-    last_updated: '2026-10-11'
+    github_stars: 1855
+    last_updated: '2026-11-01'
   added_date: '2024-06-04'
   tags:
   - household
@@ -177,8 +177,8 @@
   language:
   - python
   stats:
-    github_stars: 3248
-    last_updated: '2026-10-11'
+    github_stars: 3252
+    last_updated: '2026-11-01'
   added_date: '2021-06-25'
   tags:
   - JAX
@@ -204,8 +204,8 @@
   language:
   - python
   stats:
-    github_stars: 4708
-    last_updated: '2026-10-11'
+    github_stars: 4722
+    last_updated: '2026-11-01'
   added_date: '2018-01-01'
   tags:
   - MuJoCo
@@ -231,8 +231,8 @@
   - python
   - c++
   stats:
-    github_stars: 851
-    last_updated: '2026-10-11'
+    github_stars: 862
+    last_updated: '2026-11-01'
   added_date: '2020-03-18'
   tags:
   - articulated-objects
@@ -263,8 +263,8 @@
   - Python
   - C++
   stats:
-    github_stars: 4243
-    last_updated: '2026-10-11'
+    github_stars: 4400
+    last_updated: '2026-11-01'
   added_date: '2026-07-08'
   tags:
   - PhysX
@@ -300,8 +300,8 @@
   - Python (JAX
   - Warp)
   stats:
-    github_stars: 2248
-    last_updated: '2026-10-11'
+    github_stars: 2268
+    last_updated: '2026-11-01'
   added_date: '2026-07-19'
   tags:
   - MJX
