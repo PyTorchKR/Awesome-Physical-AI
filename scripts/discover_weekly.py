@@ -133,6 +133,8 @@ def filter_seen_candidates(
             "paper_only",
             "not_submitted",
             "retry_exhausted",
+            # A camera-ready revision may add the venue to the arXiv comment.
+            "low_credibility",
         }
         revision_changed = bool(
             revision_recheck
@@ -201,7 +203,16 @@ def candidate_cache_disposition(candidate: Any) -> tuple[str, str]:
             return "terminal", "llm_non_model"
 
     availability = getattr(candidate, "artifact_availability", {}) or {}
-    if availability.get("has_verified_model_link") or availability.get("has_verified_code_link"):
+    has_verified_release = bool(
+        availability.get("has_verified_model_link") or availability.get("has_verified_code_link")
+    )
+    if (
+        has_verified_release
+        and not getattr(candidate, "llm_review_selected", False)
+        and not getattr(candidate, "credibility_score", 0)
+    ):
+        return "terminal", "low_credibility"
+    if has_verified_release:
         # Submission readiness is decided by discovery_model_submitter, which
         # overrides this with "submitted" or a 7-day "retry" when over the limit.
         return "terminal", "not_submitted"
@@ -388,6 +399,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Choose which rule-eligible candidates are sent to --llm-review-command.",
     )
     parser.add_argument(
+        "--min-credibility",
+        type=int,
+        default=1,
+        help=(
+            "Send only candidates with at least this many credibility signals "
+            "(top-venue acceptance, trusted institution) to LLM review."
+        ),
+    )
+    parser.add_argument(
         "--llm-review-command",
         help="Command that receives candidate JSON on stdin and returns one JSON review object.",
     )
@@ -438,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             llm_review_command=args.llm_review_command,
             llm_review_mode=args.llm_review_mode,
             max_ambiguous=args.max_ambiguous,
+            min_credibility=args.min_credibility,
         )
 
         if not args.no_update_seen_cache:

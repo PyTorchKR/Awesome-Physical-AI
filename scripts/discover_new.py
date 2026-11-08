@@ -35,10 +35,13 @@ import xml.etree.ElementTree as ET
 import requests
 import yaml
 
+import discovery_credibility as credibility
+
 
 ROOT = Path(__file__).parent.parent
 DATA_DIR = ROOT / "data"
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
+ARXIV_HTML_URL = "https://arxiv.org/html/{arxiv_id}"
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_HEADERS = {
@@ -143,7 +146,12 @@ class Candidate:
     updated: str = ""
     arxiv_version: str = ""
     authors: list[str] = field(default_factory=list)
+    comment: str = ""
+    journal_ref: str = ""
     links: list[str] = field(default_factory=list)
+    venue: str = ""
+    institutions: list[str] = field(default_factory=list)
+    credibility_score: int = 0
     checks: list[LinkCheck] = field(default_factory=list)
     duplicate_matches: list[str] = field(default_factory=list)
     llm_review: dict[str, Any] = field(default_factory=dict)
@@ -622,6 +630,8 @@ def candidate_review_payload(candidate: Candidate) -> dict[str, Any]:
         "title": candidate.title,
         "abstract": candidate.summary,
         "authors": candidate.authors,
+        "venue": candidate.venue,
+        "institutions": candidate.institutions,
         "paper_url": candidate.url,
         "links": candidate.links,
         "duplicate_matches": candidate.duplicate_matches,
@@ -659,7 +669,7 @@ def candidate_review_payload(candidate: Candidate) -> dict[str, Any]:
             "maintainer_summary": "2-3 sentence note for the discovery report",
             "reason": "short explanation",
             "model_name": "official model name when supported by evidence, otherwise empty",
-            "organization": "official repository owner or stated organization, otherwise empty",
+            "organization": "institutions joined with ' / ' when provided, otherwise the stated organization, otherwise empty",
             "categories": "subset of Add a Model category values",
             "hardware_targets": "subset of Add a Model hardware values",
             "learning_methods": "subset of Add a Model learning values",
@@ -726,6 +736,7 @@ def parse_arxiv_feed(xml: str) -> tuple[list[Candidate], int | None]:
     ns = {
         "atom": "http://www.w3.org/2005/Atom",
         "opensearch": "http://a9.com/-/spec/opensearch/1.1/",
+        "arxiv": "http://arxiv.org/schemas/atom",
     }
     total_text = root.findtext("opensearch:totalResults", default="", namespaces=ns).strip()
     total_results = int(total_text) if total_text.isdigit() else None
@@ -738,6 +749,8 @@ def parse_arxiv_feed(xml: str) -> tuple[list[Candidate], int | None]:
         url = canonicalize_url(raw_url)
         published = entry.findtext("atom:published", default="", namespaces=ns)
         updated = entry.findtext("atom:updated", default="", namespaces=ns)
+        comment = " ".join(entry.findtext("arxiv:comment", default="", namespaces=ns).split())
+        journal_ref = " ".join(entry.findtext("arxiv:journal_ref", default="", namespaces=ns).split())
         version_match = re.search(r"(v\d+)$", urlsplit(raw_url).path)
         authors = [
             a.findtext("atom:name", default="", namespaces=ns)
@@ -765,6 +778,8 @@ def parse_arxiv_feed(xml: str) -> tuple[list[Candidate], int | None]:
             updated=updated,
             arxiv_version=version_match.group(1) if version_match else "",
             authors=[a for a in authors if a],
+            comment=comment,
+            journal_ref=journal_ref,
             links=links,
         ))
 
@@ -850,10 +865,50 @@ def fetch_arxiv_by_ids(arxiv_ids: list[str]) -> list[Candidate]:
     return candidates
 
 
+def fetch_author_block(paper_url: str) -> str:
+    match = ARXIV_ID_RE.match(urlsplit(paper_url).path)
+    if not match:
+        return ""
+    try:
+        response = http_get(ARXIV_HTML_URL.format(arxiv_id=match.group(1)), timeout=20)
+    except requests.RequestException:
+        return ""
+    return credibility.extract_author_block(response.text) if response.ok else ""
+
+
+def assess_credibility(candidate: Candidate, fetch_affiliations: bool = True) -> None:
+    candidate.venue = credibility.detect_venue(candidate.comment, candidate.journal_ref)
+    author_text = fetch_author_block(candidate.url) if fetch_affiliations else ""
+    official_links = [check.url for check in candidate.checks if check.status == "available"]
+    candidate.institutions = credibility.match_institutions(author_text, official_links)
+    candidate.credibility_score = credibility.credibility_score(candidate.venue, candidate.institutions)
+    if candidate.venue:
+        candidate.reasons.append(f"accepted at {candidate.venue}")
+    if candidate.institutions:
+        candidate.reasons.append(f"trusted institution: {', '.join(candidate.institutions)}")
+    if not candidate.credibility_score:
+        candidate.reasons.append("no top-venue acceptance or trusted institution found")
+
+
+def is_rule_eligible(candidate: Candidate) -> bool:
+    return (
+        candidate.recommendation == "needs_review"
+        and candidate.review_bucket != "reject"
+        and candidate.relevance == "high"
+        and not candidate.duplicate_matches
+        and not candidate.exclusion_hits
+        and bool(
+            candidate.artifact_availability.get("has_verified_model_link")
+            or candidate.artifact_availability.get("has_verified_code_link")
+        )
+    )
+
+
 def llm_review_targets(
     candidates: list[Candidate],
     llm_review_mode: str,
     max_ambiguous: int,
+    min_credibility: int = 0,
 ) -> list[Candidate]:
     if llm_review_mode == "off":
         return []
@@ -861,19 +916,16 @@ def llm_review_targets(
     # LLM review is the second gate after deterministic checks. Do not spend a
     # model call on candidates that the submitter would reject regardless of
     # the LLM decision.
-    eligible = [
-        candidate
-        for candidate in candidates
-        if candidate.recommendation == "needs_review"
-        and candidate.review_bucket != "reject"
-        and candidate.relevance == "high"
-        and not candidate.duplicate_matches
-        and not candidate.exclusion_hits
-        and (
-            candidate.artifact_availability.get("has_verified_model_link")
-            or candidate.artifact_availability.get("has_verified_code_link")
-        )
-    ]
+    # Papers from top venues or well-known labs are reviewed first so the
+    # weekly submission limit goes to them.
+    eligible = sorted(
+        (
+            candidate
+            for candidate in candidates
+            if is_rule_eligible(candidate) and candidate.credibility_score >= min_credibility
+        ),
+        key=lambda candidate: -candidate.credibility_score,
+    )
     if llm_review_mode == "all":
         return eligible
 
@@ -887,6 +939,7 @@ def evaluate_candidates(
     llm_review_command: str | None = None,
     llm_review_mode: str = "ambiguous",
     max_ambiguous: int = 10,
+    min_credibility: int = 0,
 ) -> list[Candidate]:
     existing_entries = load_yaml_entries()
     for candidate in candidates:
@@ -921,8 +974,11 @@ def evaluate_candidates(
         candidate.recommendation = recommendation
         candidate.review_bucket = review_bucket
         candidate.reasons.extend(decision_reasons)
+        if is_rule_eligible(candidate):
+            # Only rule-eligible candidates need an arXiv HTML fetch for affiliations.
+            assess_credibility(candidate, fetch_affiliations=verify_links)
 
-    targets = llm_review_targets(candidates, llm_review_mode, max_ambiguous)
+    targets = llm_review_targets(candidates, llm_review_mode, max_ambiguous, min_credibility)
     target_ids = {id(c) for c in targets}
     for candidate in candidates:
         candidate.llm_review_selected = id(candidate) in target_ids
@@ -1093,6 +1149,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--min-credibility",
+        type=int,
+        default=0,
+        help=(
+            "Send only candidates with at least this many credibility signals "
+            "(top-venue acceptance, trusted institution) to LLM review."
+        ),
+    )
+    parser.add_argument(
         "--llm-review-command",
         help=(
             "Optional command that receives candidate JSON on stdin and returns one JSON object. "
@@ -1110,6 +1175,7 @@ def main() -> int:
             llm_review_command=args.llm_review_command,
             llm_review_mode=args.llm_review_mode,
             max_ambiguous=args.max_ambiguous,
+            min_credibility=args.min_credibility,
         )
     except requests.RequestException as exc:
         print(f"error: discovery request failed: {exc}", file=sys.stderr)

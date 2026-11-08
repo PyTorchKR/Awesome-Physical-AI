@@ -85,6 +85,7 @@ GENERIC_TAGS = {
     "physical-ai", "ai", "model", "deep-learning", "machine-learning",
 }
 MAX_TAGS = 6
+MAX_ORGANIZATIONS = 3
 
 
 @dataclass(frozen=True)
@@ -184,6 +185,10 @@ def derive_model_name(candidate: dict[str, Any], huggingface_url: str) -> str:
 
 
 def derive_organization(candidate: dict[str, Any], *official_urls: str) -> str:
+    institutions = [clean_text(name, limit=60) for name in candidate.get("institutions") or [] if name]
+    if institutions:
+        return " / ".join(institutions[:MAX_ORGANIZATIONS])
+
     llm_review = candidate.get("llm_review") or {}
     if llm_review.get("status") == "ok":
         organization = clean_text(llm_review.get("organization"), limit=120)
@@ -355,6 +360,8 @@ def select_submissions(
 ) -> tuple[list[ModelSubmission], list[tuple[str, list[str]]]]:
     submissions: list[ModelSubmission] = []
     skipped: list[tuple[str, list[str]]] = []
+    # Stable sort keeps deferred retries ahead of new papers with the same score.
+    candidates = sorted(candidates, key=lambda candidate: -int(candidate.get("credibility_score") or 0))
     for candidate in candidates:
         if not candidate.get("llm_review_selected"):
             continue
