@@ -135,6 +135,7 @@ def test_verified_release_waits_for_submitter_decision():
         relevance="high",
         checks=[],
         artifact_availability={"has_verified_code_link": True},
+        credibility_score=1,
     )
 
     cache = weekly.update_seen_cache(
@@ -347,3 +348,32 @@ def test_workflow_uses_integrated_runner_and_dedicated_submission_token():
     assert "discovery_issue_creator.py" not in workflow
     assert "llm_reviewer_openrouter.py" not in workflow
     assert "llm_reviewer_gemini.py" not in workflow
+
+
+def test_verified_release_without_credibility_is_cached_for_revision_recheck():
+    candidate = SimpleNamespace(
+        source="arxiv",
+        title="RoboPolicy",
+        url="https://arxiv.org/abs/2601.00001",
+        published="2026-01-01",
+        updated="2026-01-01T00:00:00Z",
+        arxiv_version="v1",
+        duplicate_matches=[],
+        exclusion_hits=[],
+        review_bucket="normal",
+        relevance="high",
+        checks=[],
+        artifact_availability={"has_verified_code_link": True},
+        llm_review_selected=False,
+        credibility_score=0,
+    )
+
+    cache = weekly.update_seen_cache(
+        weekly.empty_seen_cache(), [candidate], seen_at="2026-01-01T00:00:00Z"
+    )
+    assert cache["seen"]["https://arxiv.org/abs/2601.00001"]["reason"] == "low_credibility"
+
+    # A camera-ready revision may add "Accepted to CoRL" to the arXiv comment.
+    revised = SimpleNamespace(**{**vars(candidate), "updated": "2026-02-01T00:00:00Z"})
+    fresh, skipped = weekly.filter_seen_candidates([revised], cache, now="2026-02-02T00:00:00Z")
+    assert fresh == [revised] and skipped == []
