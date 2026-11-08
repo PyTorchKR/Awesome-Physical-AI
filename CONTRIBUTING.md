@@ -30,6 +30,8 @@
 
 이슈를 등록하면 봇이 자동으로 PR을 생성합니다. 관리자가 검토 후 머지합니다.
 
+모델을 추가하면 봇이 그 모델의 논문(`paper_url`)에서 벤치마크 점수를 추출해 PR에 함께 넣고, 값마다 논문의 표 위치를 PR 본문에 적습니다. 확신할 수 없는 값은 넣지 않고 PR 본문에 "불확실"로 표시합니다. **모델은 이슈로 추가하는 것을 권장합니다.**
+
 #### 등록된 정보 수정
 
 이미 등록된 항목의 정보가 잘못되었다면 아래 수정 템플릿을 사용하세요.
@@ -51,7 +53,7 @@
 
 #### 직접 PR 제출
 
-YAML 파일을 직접 수정해 PR을 제출할 수도 있습니다.
+YAML 파일을 직접 수정해 PR을 제출할 수도 있습니다. 이 경우 벤치마크 점수는 자동으로 추출되지 않습니다. `benchmarks`를 직접 넣는다면 그 모델의 `paper_url` 논문에 나온 값만 쓰고, PR 본문에 값마다 표 위치를 적어주세요.
 
 ```
 data/models.yaml    — 모델
@@ -95,6 +97,7 @@ python scripts/sync_edit_templates.py  # 수정 폼 드롭다운 갱신
 | 주간 스타수 업데이트 | `scripts/update_stats.py` |
 | YAML 스키마 검증 규칙 | `scripts/validate_data.py` |
 | 이슈 → PR 자동화 | `scripts/process_issue.py`, `.github/workflows/process-issue.yml` |
+| 벤치마크 점수 추출 | `scripts/extract_benchmarks.py` (정의: `scripts/validate_data.py`의 `BENCHMARK_META`) |
 | 수정 폼 ID 드롭다운 동기화 | `scripts/sync_edit_templates.py` (봇 PR에서 자동 실행) |
 | CI 워크플로우 | `.github/workflows/` |
 
@@ -177,6 +180,8 @@ There are two types of contributions:
 
 A bot will automatically open a PR from your issue. Maintainers will review and merge.
 
+When you add a model, the bot also extracts benchmark scores from the model's paper (`paper_url`), adds them to the PR, and lists the table each value came from in the PR body. Values it is not sure about are left out and marked as uncertain in the PR body. **Adding models through an issue is recommended.**
+
 #### Fixing an existing entry
 
 If information on an already-listed entry is wrong, use the edit templates:
@@ -198,7 +203,7 @@ Emptying a checkbox group is not supported, since some groups are required at su
 
 #### Direct PR
 
-You can also edit the YAML files directly and submit a PR.
+You can also edit the YAML files directly and submit a PR. Benchmark scores are not extracted automatically in that case. If you add `benchmarks` yourself, use only values from the model's own `paper_url` paper and note the table for each value in the PR body.
 
 ```
 data/models.yaml    — models
@@ -242,6 +247,7 @@ Feature contributions must follow the **Issue → Discussion → PR** flow.
 | Weekly stats update | `scripts/update_stats.py` |
 | YAML schema validation rules | `scripts/validate_data.py` |
 | Issue → PR automation | `scripts/process_issue.py`, `.github/workflows/process-issue.yml` |
+| Benchmark score extraction | `scripts/extract_benchmarks.py` (definitions: `BENCHMARK_META` in `scripts/validate_data.py`) |
 | Edit-form ID dropdown sync | `scripts/sync_edit_templates.py` (runs automatically in the bot's PR) |
 | CI workflows | `.github/workflows/` |
 
