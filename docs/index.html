@@ -182,7 +182,7 @@
       </template>
     </div>
     <div class="flex justify-between gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
-      <span x-text="benchMetaText()"></span>
+      <span class="break-keep" x-text="benchMetaText()"></span>
       <span class="tabular-nums whitespace-nowrap" x-text="lang === 'ko' ? models.length + '개 모델 중 ' + benchCount(benchKey) + '개' : benchCount(benchKey) + ' of ' + models.length + ' models'"></span>
     </div>
     <div class="relative h-64 md:h-80">
@@ -190,8 +190,8 @@
       <div id="benchEmpty" class="hidden absolute inset-0 grid place-items-center rounded-lg border border-dashed border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"
            x-text="lang === 'ko' ? '아직 점수가 등록된 모델이 없습니다' : 'No scores registered yet'"></div>
     </div>
-    <p id="benchSpill" class="text-xs text-gray-600 dark:text-gray-300 mt-2 empty:hidden"></p>
-    <p id="benchCap" class="text-xs text-gray-500 dark:text-gray-400 mt-1 empty:hidden"></p>
+    <p id="benchSpill" class="text-xs text-gray-600 dark:text-gray-300 mt-2 empty:hidden break-keep"></p>
+    <p id="benchCap" class="text-xs text-gray-500 dark:text-gray-400 mt-1 empty:hidden break-keep"></p>
   </div>
 
   <!-- Tab: Models / Datasets -->
