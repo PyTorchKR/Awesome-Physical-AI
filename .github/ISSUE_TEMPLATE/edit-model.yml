@@ -34,6 +34,7 @@ body:
         - "cogact — CogACT"
         - "dial — DIAL"
         - "rdt-1b — RDT-1B"
+        - "aero-vpa — Aero-VPA"
         # AUTOGEN:models:end
     validations:
       required: true

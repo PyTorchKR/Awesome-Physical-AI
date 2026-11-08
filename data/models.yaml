@@ -605,3 +605,39 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: aero-vpa
+  name: Aero-VPA
+  org: ylee-sling
+  year: 2026
+  description_en: Aero-VPA is a lightweight vision-predictor-action architecture designed
+    for agile 3D navigation on edge hardware. It combines a non-reconstructive JEPA
+    latent predictor with a conditional flow matching solver to generate velocity
+    and yaw-rate commands in two Euler steps. An ensemble dispersion mechanism further
+    provides uncertainty-based fallbacks during quadrotor flight.
+  description_ko: Aero-VPA는 엣지 하드웨어에서 민첩한 3D 내비게이션을 위해 설계된 경량 vision-predictor-action
+    아키텍처입니다. 비재구성 JEPA latent 예측기와 conditional flow matching 솔이버를 결합하여 두 번의 Euler
+    스텝으로 속도 및 요 레이트 명령을 생성합니다. 또한 앙상블 분산 메커니즘을 통해 쿼드로터 비행 중 불확실성 기반 폴백을 제공합니다.
+  github_url: ''
+  paper_url: https://arxiv.org/abs/2611.04392
+  hf_url: https://huggingface.co/ylee-sling/aero-vpa
+  project_url: ''
+  categories:
+  - navigation
+  - aerial
+  hardware:
+  - drone
+  learning:
+  - diffusion
+  framework: []
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-08'
+  added_date: '2026-11-08'
+  tags:
+  - flow-matching
+  - jepa
+  - vision-language-action
+  - edge-computing
