@@ -187,7 +187,6 @@
       <div id="benchEmpty" class="hidden absolute inset-0 grid place-items-center rounded-lg border border-dashed border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"
            x-text="lang === 'ko' ? '아직 점수가 등록된 모델이 없습니다' : 'No scores registered yet'"></div>
     </div>
-    <p id="benchSpill" class="text-xs text-gray-600 dark:text-gray-300 mt-2 empty:hidden break-keep"></p>
   </div>
 
   <!-- Tab: Models / Datasets -->
@@ -885,8 +884,7 @@ function app() {
       const canvas = document.getElementById('benchChart'); if (!canvas) return;
       const prev = Chart.getChart(canvas); if (prev) prev.destroy();
       const key = this.benchKey, meta = (this.benchmarkMeta || {})[key], ko = this.lang === 'ko', dark = this.darkMode;
-      const spillEl = document.getElementById('benchSpill'), emptyEl = document.getElementById('benchEmpty');
-      spillEl.textContent = '';
+      const emptyEl = document.getElementById('benchEmpty');
 
       // x = paper month, read from the arXiv id in paper_url (models.yaml has no month field)
       const arx = url => { const m = /arxiv\.org\/(?:abs|pdf)\/(\d{2})(\d{2})\.(\d{4,5})/.exec(url || ''); return m ? { t: (+m[1]) * 12 + (+m[2]) - 1, seq: +m[3] } : null; };
@@ -920,7 +918,7 @@ function app() {
       const FONT = getComputedStyle(document.body).fontFamily, fs = 12;
       const xs = pts.map(p => p.x), xMin = Math.min(...xs) - 2, xMax = Math.max(...xs) + 2;
 
-      // each dot gets its name beside it; a name that fits nowhere is listed under the chart instead
+      // each dot gets its name beside it; a name that fits nowhere is left to the tooltip
       const ov = (a, b) => !(a.x2 <= b.x1 || b.x2 <= a.x1 || a.y2 <= b.y1 || b.y2 <= a.y1);
       const names = {
         id: 'benchNames',
@@ -930,7 +928,7 @@ function app() {
           if (!chart.$place) {
             const R = 5, obst = els.map(el => ({ x1: el.x - R - 3, y1: el.y - R - 3, x2: el.x + R + 3, y2: el.y + R + 3 }));
             const inside = b => b.x1 >= a.left - 2 && b.x2 <= a.right + 2 && b.y1 >= a.top - 16 && b.y2 <= a.bottom + 2;
-            const placed = [], spill = [];
+            const placed = [];
             for (const j of pts.map((p, j) => j).sort((u, v) => pts[v].y - pts[u].y)) {
               const p = pts[j], el = els[j];
               ctx.font = `600 ${fs}px ${FONT}`; const wN = ctx.measureText(p.name).width;
@@ -940,10 +938,9 @@ function app() {
                 const b = { x1: el.x + c[0], y1: el.y + c[1], x2: el.x + c[0] + w, y2: el.y + c[1] + h };
                 if (inside(b) && !obst.some(o => ov(b, o)) && !placed.some(o => ov(b, o.b))) { got = b; break; }
               }
-              if (got) placed.push({ p, b: got, wN }); else spill.push(p);
+              if (got) placed.push({ p, b: got, wN });
             }
             chart.$place = placed;
-            spillEl.textContent = spill.length ? (ko ? '그래프에 이름이 안 들어간 모델: ' : 'Not labeled on the chart: ') + spill.map(p => `${p.name} ${fmt(p.y)}`).join(' · ') : '';
           }
           ctx.save(); ctx.textBaseline = 'top';
           for (const L of chart.$place) {
