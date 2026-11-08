@@ -395,3 +395,21 @@ def test_candidates_beyond_submission_limit_remain_retryable(tmp_path, monkeypat
     assert statuses == ["submitted", "retry", "retry"]
     assert reasons == ["add_model_issue_exists", "awaiting_submission", "awaiting_submission"]
     assert all(cache["seen"][item["url"]]["next_check_at"] for item in candidates[1:])
+
+
+def test_organization_prefers_trusted_institutions():
+    submission, reasons = submitter.build_model_submission(
+        candidate(institutions=["Stanford", "UC Berkeley", "Meta", "NVIDIA"])
+    )
+
+    assert reasons == []
+    assert submission.organization == "Stanford / UC Berkeley / Meta"
+
+
+def test_select_submissions_ranks_credible_candidates_first():
+    low = candidate(title="LowPolicy: Robot Manipulation", url="http://arxiv.org/abs/2601.00001v1", credibility_score=1)
+    high = candidate(title="HighPolicy: Robot Manipulation", url="http://arxiv.org/abs/2601.00002v1", credibility_score=2)
+
+    submissions, _skipped = submitter.select_submissions([low, high], limit=1)
+
+    assert [submission.key for submission in submissions] == ["https://arxiv.org/abs/2601.00002"]

@@ -488,3 +488,55 @@ def test_render_markdown_states_no_issues_created():
     assert "A public-facing summary." in report
     assert "LLM maintainer summary" in report
     assert "A maintainer-facing summary." in report
+
+
+def _eligible(title, score):
+    candidate = _candidate(title=title)
+    candidate.relevance = "high"
+    candidate.recommendation = "needs_review"
+    candidate.review_bucket = "normal"
+    candidate.artifact_availability = {"has_verified_code_link": True}
+    candidate.credibility_score = score
+    return candidate
+
+
+def test_llm_review_targets_skip_low_credibility_and_rank_by_score():
+    unknown = _eligible("Unknown lab", 0)
+    venue_only = _eligible("CoRL paper", 1)
+    both = _eligible("CoRL paper from NVIDIA", 2)
+
+    targets = dn.llm_review_targets(
+        [unknown, venue_only, both], llm_review_mode="all", max_ambiguous=10, min_credibility=1
+    )
+
+    assert targets == [both, venue_only]
+
+
+def test_parse_arxiv_feed_reads_comment_and_journal_ref():
+    xml = """<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
+      <entry>
+        <id>http://arxiv.org/abs/2601.00001v1</id>
+        <title>Policy</title>
+        <summary>A robot policy.</summary>
+        <published>2026-01-01T00:00:00Z</published>
+        <updated>2026-01-01T00:00:00Z</updated>
+        <arxiv:comment>Accepted to CoRL 2026</arxiv:comment>
+        <arxiv:journal_ref>IEEE RA-L 2026</arxiv:journal_ref>
+      </entry>
+    </feed>"""
+
+    candidates, _total = dn.parse_arxiv_feed(xml)
+
+    assert candidates[0].comment == "Accepted to CoRL 2026"
+    assert candidates[0].journal_ref == "IEEE RA-L 2026"
+
+
+def test_assess_credibility_uses_venue_and_affiliations(monkeypatch):
+    candidate = _candidate(comment="Accepted to CoRL 2026. Project page: https://example.com")
+    monkeypatch.setattr(dn, "fetch_author_block", lambda url: "Alice Affiliation: UC Berkeley Bob Affiliation: Meta")
+
+    dn.assess_credibility(candidate)
+
+    assert candidate.venue == "CoRL"
+    assert candidate.institutions == ["UC Berkeley", "Meta"]
+    assert candidate.credibility_score == 2

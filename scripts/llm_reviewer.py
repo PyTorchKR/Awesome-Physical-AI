@@ -117,7 +117,7 @@ Rules:
 - entry_summary_ko must state the same content as entry_summary in natural Korean. Use an established Korean term only when one exists; otherwise keep the English term as written (e.g. proprioceptive) and never transliterate it into Hangul (e.g. not 프롭리오셉티브).
 - tags must be 3-6 lowercase kebab-case tags naming the model's distinctive techniques or components (e.g. flow-matching, action-chunking). Do not use generic words such as robot, robotics, or embodied, or values that belong in the metadata arrays.
 - maintainer_summary must be a concise 2-3 sentence note for the discovery report.
-- model_name and organization must be supported by the title or an official repository namespace; otherwise return an empty string.
+- model_name must be supported by the title or an official repository namespace. organization must join the provided institutions with " / " when present; otherwise use one supported by the input, or return an empty string.
 - Metadata arrays are PR preparation annotations. Select only explicitly supported schema values.
 - Do not invent links, stars, datasets, models, code releases, benchmarks, or claims not present in the input.
 - Return only valid JSON matching the requested schema. Do not wrap it in markdown.
