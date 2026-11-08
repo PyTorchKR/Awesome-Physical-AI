@@ -175,7 +175,7 @@
     <div class="flex flex-wrap gap-1.5 mb-3" role="group" :aria-label="lang === 'ko' ? '벤치마크 선택' : 'Choose a benchmark'">
       <template x-for="k in benchKeys()" :key="k">
         <button type="button" @click="benchKey = k; buildBenchChart()" :aria-pressed="(benchKey === k).toString()"
-                :class="benchKey === k ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+                :class="benchKey === k ? 'bg-brand-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
                 class="text-xs px-2.5 py-1 rounded-full font-medium transition-colors">
           <span x-text="benchLabel(k)"></span>
         </button>
