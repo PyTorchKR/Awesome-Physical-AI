@@ -188,7 +188,6 @@
            x-text="lang === 'ko' ? '아직 점수가 등록된 모델이 없습니다' : 'No scores registered yet'"></div>
     </div>
     <p id="benchSpill" class="text-xs text-gray-600 dark:text-gray-300 mt-2 empty:hidden break-keep"></p>
-    <p id="benchCap" class="text-xs text-gray-500 dark:text-gray-400 mt-1 empty:hidden break-keep"></p>
   </div>
 
   <!-- Tab: Models / Datasets -->
@@ -886,15 +885,15 @@ function app() {
       const canvas = document.getElementById('benchChart'); if (!canvas) return;
       const prev = Chart.getChart(canvas); if (prev) prev.destroy();
       const key = this.benchKey, meta = (this.benchmarkMeta || {})[key], ko = this.lang === 'ko', dark = this.darkMode;
-      const capEl = document.getElementById('benchCap'), spillEl = document.getElementById('benchSpill'), emptyEl = document.getElementById('benchEmpty');
-      capEl.textContent = ''; spillEl.textContent = '';
+      const spillEl = document.getElementById('benchSpill'), emptyEl = document.getElementById('benchEmpty');
+      spillEl.textContent = '';
 
       // x = paper month, read from the arXiv id in paper_url (models.yaml has no month field)
       const arx = url => { const m = /arxiv\.org\/(?:abs|pdf)\/(\d{2})(\d{2})\.(\d{4,5})/.exec(url || ''); return m ? { t: (+m[1]) * 12 + (+m[2]) - 1, seq: +m[3] } : null; };
-      const pts = []; let noDate = 0;
+      const pts = [];
       for (const mo of this.models) {
         const v = mo.benchmarks && mo.benchmarks[key]; if (v == null) continue;
-        const d = arx(mo.paper_url); if (!d) { noDate++; continue; }
+        const d = arx(mo.paper_url); if (!d) continue;
         pts.push({ x: d.t, y: v, seq: d.seq, name: mo.name });
       }
       pts.sort((a, b) => a.x - b.x || a.seq - b.seq);
@@ -915,9 +914,6 @@ function app() {
         yMin = Math.max(s0, +(Math.floor((lo - pad) / step + 1e-9) * step).toFixed(2));
         yMax = Math.min(s1, +(Math.ceil((hi + pad) / step - 1e-9) * step).toFixed(2));
       }
-      const notes = [];
-      if (noDate) notes.push(ko ? `arXiv 번호가 없는 ${noDate}개는 날짜를 알 수 없어 빠졌습니다` : `${noDate} without an arXiv id are left out (no date)`);
-      capEl.textContent = notes.join(' · ');
 
       const C = dark ? { card: '#111827', text: '#f3f4f6', muted: '#9ca3af', grid: 'rgba(255,255,255,0.08)', dot: '#818cf8' }
                      : { card: '#ffffff', text: '#111827', muted: '#6b7280', grid: 'rgba(0,0,0,0.06)', dot: '#6366f1' };
