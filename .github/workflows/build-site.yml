@@ -6,6 +6,7 @@ on:
     paths:
       - "data/**"
       - "scripts/generate_site.py"
+      - "scripts/validate_data.py"  # BENCHMARK_META is exported to docs/data.json
       - "docs/index.html"
 
 permissions:
