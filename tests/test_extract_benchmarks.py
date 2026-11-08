@@ -191,11 +191,20 @@ def test_insert_benchmarks_only_adds_lines_after_paper_url():
     assert yaml.safe_load(updated)[0]["benchmarks"] == {"LIBERO_Spatial": 0.847, "LIBERO_Long": 0.537}
 
 
+def test_insert_benchmarks_appends_to_an_existing_block():
+    once = eb.insert_benchmarks(MODELS_YAML, "openvla", {"LIBERO_Spatial": 0.847})
+
+    twice = eb.insert_benchmarks(once, "openvla", {"LIBERO_Long": 0.537})
+
+    assert twice.splitlines()[3:6] == ["  benchmarks:", "    LIBERO_Spatial: 0.847", "    LIBERO_Long: 0.537"]
+    assert twice.splitlines()[6] == "  hf_url: https://huggingface.co/openvla/openvla-7b"
+
+
 def test_insert_benchmarks_refuses_to_overwrite():
     once = eb.insert_benchmarks(MODELS_YAML, "gr1", {"CALVIN_ACL": 4.21})
 
-    with pytest.raises(ValueError, match="already has benchmarks"):
-        eb.insert_benchmarks(once, "gr1", {"CALVIN_ACL": 4.21})
+    with pytest.raises(ValueError, match="already has a 'CALVIN_ACL' score"):
+        eb.insert_benchmarks(once, "gr1", {"CALVIN_ACL": 4.09})
     with pytest.raises(ValueError, match="not found"):
         eb.insert_benchmarks(MODELS_YAML, "missing", {"CALVIN_ACL": 4.21})
 
@@ -209,7 +218,7 @@ def test_render_report_lists_sources_and_sanitizes_llm_text():
     report = eb.render_report([result])
 
     assert "| CALVIN_ACL | 4.21 | 4.21 ABCD→D | Table 1 · GR-1 (Ours) |" in report
-    assert "Tab\\|le @​someone" in report
+    assert "Tab\\|le @\u200bsomeone" in report
     assert "같은 숫자를 찾지 못함" in report
 
 
@@ -223,7 +232,7 @@ def test_main_missing_fills_only_models_without_benchmarks(tmp_path, monkeypatch
 
     def fake_llm(name, text, **kwargs):
         seen.append(name)
-        return [_score()]
+        return {"scores": [_score()], "other_benchmarks": []}
 
     monkeypatch.setattr(eb, "ask_llm", fake_llm)
 
@@ -234,6 +243,60 @@ def test_main_missing_fills_only_models_without_benchmarks(tmp_path, monkeypatch
     assert entries[1]["benchmarks"] == {"CALVIN_ACL": 4.21}
     assert entries[0]["benchmarks"] == {"LIBERO_Goal": 0.792}
     assert "**gr1**" in capsys.readouterr().out
+
+
+def test_main_benchmark_fills_one_new_benchmark_without_touching_existing_scores(tmp_path, monkeypatch):
+    # openvla already has LIBERO_Goal; a newly defined benchmark should still be checked for it
+    path = tmp_path / "models.yaml"
+    path.write_text(eb.insert_benchmarks(MODELS_YAML, "openvla", {"LIBERO_Goal": 0.792}), encoding="utf-8")
+    monkeypatch.setattr(eb, "MODELS_PATH", path)
+    monkeypatch.setenv("GEMINI_API_KEY", "test")
+    monkeypatch.setattr(eb, "fetch_paper_text", lambda url: (PAPER, "https://arxiv.org/html/x"))
+    llm_scores = {
+        # CALVIN is found too, but only the requested benchmark may be written
+        "OpenVLA": [_score(benchmark="LIBERO_Spatial", reported_value="84.7", setting=""),
+                    _score(benchmark="CALVIN_ACL")],
+        "GR-1": [_score()],
+    }
+    monkeypatch.setattr(
+        eb, "ask_llm", lambda name, text, **kw: {"scores": llm_scores[name], "other_benchmarks": []}
+    )
+
+    assert eb.main(["--benchmark", "LIBERO_Spatial"]) == 0
+
+    entries = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert entries[0]["benchmarks"] == {"LIBERO_Goal": 0.792, "LIBERO_Spatial": 0.847}
+    assert "benchmarks" not in entries[1]
+
+
+def test_main_rejects_undefined_benchmark_option(monkeypatch, capsys):
+    monkeypatch.setenv("GEMINI_API_KEY", "test")
+
+    assert eb.main(["--benchmark", "NEWBENCH"]) == 1
+    assert "Unknown benchmark" in capsys.readouterr().err
+
+
+def test_undefined_benchmarks_skips_defined_names_and_duplicates():
+    raw = [
+        {"name": "RoboCasa", "table": "Table 3", "is_public_benchmark": True},
+        {"name": "robocasa ", "table": "Table 5", "is_public_benchmark": True},
+        {"name": "LIBERO-90", "table": "Table 2", "is_public_benchmark": True},
+        {"name": "CALVIN ABC→D", "table": "Table 1", "is_public_benchmark": True},
+        {"name": "Franka Real-World  Evaluation", "table": "Table 6", "is_public_benchmark": False},
+        {"name": "NEWBENCH", "table": "", "is_public_benchmark": True},
+        {"name": "", "table": "Table 9", "is_public_benchmark": True},
+    ]
+
+    assert eb.undefined_benchmarks(raw) == [("RoboCasa", "Table 3"), ("NEWBENCH", "")]
+
+
+def test_render_report_lists_undefined_benchmarks_even_without_scores():
+    result = eb.ExtractionResult(model_id="groot", other_benchmarks=[("RoboCasa", "Table 3"), ("NEWBENCH", "")])
+
+    report = eb.render_report([result])
+
+    assert "- 정의된 벤치마크 결과를 찾지 못했습니다." in report
+    assert "- 정의되지 않은 벤치마크: RoboCasa (Table 3), NEWBENCH" in report
 
 
 # ─────────────────────────────────────────────────────────────────────────────
