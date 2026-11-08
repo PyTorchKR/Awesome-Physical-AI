@@ -616,3 +616,40 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: maestro
+  name: MAESTRO
+  org: University of Pennsylvania
+  year: 2025
+  description_en: MAESTRO utilizes a vision-language model as a coding agent to write
+    and execute robot programs using a curated library of perception, planning, and
+    control tools. It employs a plan-act-replan loop with visual and execution feedback
+    to verify outcomes and recover from failures in zero-shot generalist robot tasks.
+  description_ko: MAESTRO는 비전 언어 모델을 코딩 에이전트로 활용하여 지각, 계획, 제어 툴 라이브러리를 기반으로 로봇 프로그램을
+    작성하고 실행합니다. 시각적 및 실행 피드백을 활용하는 plan-act-replan 루프를 통해 제로샷 일반화 로봇 작업에서 결과를 검증하고
+    실패를 복구합니다.
+  github_url: https://github.com/penn-pal-lab/maestro
+  paper_url: https://arxiv.org/abs/2511.00917
+  hf_url: ''
+  project_url: https://maestro-robot.github.io/
+  categories:
+  - manipulation
+  - navigation
+  hardware:
+  - manipulator
+  - mobile
+  learning:
+  - VLA
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-08'
+  added_date: '2026-11-08'
+  tags:
+  - vision-language-model
+  - coding-agent
+  - zero-shot
+  - mobile-manipulation
