@@ -139,7 +139,7 @@ def test_benchmark_meta_matches_spec():
         "LIBERO_Goal": {"metric": "success_rate", "scale": [0, 1]},
         "LIBERO_Long": {"metric": "success_rate", "scale": [0, 1]},
         "SimplerEnv_VM": {"metric": "success_rate", "scale": [0, 1]},
-        "CALVIN_ACL": {"metric": "avg_chain_length", "scale": [0, 5]},
+        "CALVIN_ACL": {"metric": "avg_chain_length", "scale": [0, 5], "setting": "ABCD→D"},
     }
 
 

@@ -884,7 +884,7 @@ function app() {
       const m = (this.benchmarkMeta || {})[this.benchKey]; if (!m) return '';
       const ko = this.lang === 'ko';
       const unit = m.metric === 'avg_chain_length' ? (ko ? '연속 성공 과제 수 · 최대 5개' : 'Tasks done in a row · max 5') : (ko ? '성공률' : 'Success rate');
-      return this.benchLabel(this.benchKey) + ' · ' + unit;
+      return this.benchLabel(this.benchKey) + (m.setting ? ' ' + m.setting : '') + ' · ' + unit;
     },
     buildBenchChart() {
       if (typeof Chart === 'undefined') return;
@@ -906,7 +906,7 @@ function app() {
       emptyEl.classList.toggle('hidden', pts.length > 0); canvas.classList.toggle('invisible', pts.length === 0);
       if (!pts.length || !meta) return;
 
-      // values stay raw: success_rate 0–1 shown as %, CALVIN avg_chain_length 0–5 shown as is (D-003)
+      // values stay raw: success_rate 0–1 shown as %, CALVIN avg_chain_length 0–5 shown as is (#45)
       const pct = meta.metric !== 'avg_chain_length', [s0, s1] = meta.scale || [0, pct ? 1 : 5], step = pct ? 0.1 : 0.2;
       const fmt = v => pct ? (v * 100).toFixed(1) + '%' : v.toFixed(2), tick = v => pct ? Math.round(v * 100) + '%' : (+v).toFixed(1);
       const fmtLong = v => pct ? (ko ? '성공률 ' : 'Success rate ') + fmt(v) : (ko ? `${s1}개 중 평균 ${v.toFixed(2)}개 성공` : `avg ${v.toFixed(2)} of ${s1} tasks in a row`);
