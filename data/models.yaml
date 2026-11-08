@@ -605,3 +605,36 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: policyik
+  name: PolicyIK
+  org: Tinaliu0123
+  year: 2026
+  description_en: PolicyIK is a goal-conditioned reinforcement learning policy designed
+    to provide high-precision inverse kinematics for robot arms. It updates joint-position
+    references from pose feedback and employs two-scale pose errors with an error-dependent
+    action gain to resolve millimeter residuals while preserving large motions.
+  description_ko: PolicyIK는 로봇 암을 위한 고정밀 역기구학을 제공하도록 설계된 목표 조건부 강화학습 정책입니다. 포즈 피드백으로부터
+    관절 위치 레퍼런스를 업데이트하며, 오차 의존적 액션 게인이 포함된 이중 스케일 포즈 오차를 사용하여 큰 모션을 보존하면서 밀리미터 단위의
+    잔차를 해결합니다.
+  github_url: https://github.com/Tinaliu0123/PolicyIK
+  paper_url: https://arxiv.org/abs/2611.05372
+  hf_url: ''
+  project_url: ''
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - RL
+  framework: []
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-08'
+  added_date: '2026-11-08'
+  tags:
+  - inverse-kinematics
+  - goal-conditioned
+  - reinforcement-learning
