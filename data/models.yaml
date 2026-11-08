@@ -605,3 +605,40 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: finecraft
+  name: FineCraft
+  org: eqcy
+  year: 2026
+  description_en: FineCraft is a framework that adapts pretrained models for fine-grained
+    manipulation through a task-routed mixture of policies. It combines DINOv2-DiT
+    and pretrained pi_{0.5} policies to handle instruction grounding, local visual
+    precision, and sustained execution. Demonstrations and expert continuations guide
+    the required actions while new observations support online replanning.
+  description_ko: FineCraft는 태스크 라우팅 기반 정책 혼합 방식을 통해 사전 학습된 모델을 세밀 조작 작업에 적응시키는 프레임워크입니다.
+    DINOv2-DiT와 사전 학습된 pi_{0.5} 정책을 결합하여 지시사항 접지, 국소 시각적 정밀도 및 지속적인 실행을 처리합니다. 시범과
+    전문가의 연속 행동이 필요한 동작을 안내하며 새로운 관측값은 온라인 재계획을 지원합니다.
+  github_url: https://github.com/eqcy/FineCraft
+  paper_url: https://arxiv.org/abs/2611.03163
+  hf_url: ''
+  project_url: ''
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  - diffusion
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-08'
+  added_date: '2026-11-08'
+  tags:
+  - fine-grained-manipulation
+  - mixture-of-policies
+  - instruction-grounding
+  - replanning
