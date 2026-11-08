@@ -45,10 +45,6 @@ BENCHMARK_GUIDE = {
     "LIBERO_Object": "LIBERO-Object task suite success rate",
     "LIBERO_Goal": "LIBERO-Goal task suite success rate",
     "LIBERO_Long": "LIBERO-Long (LIBERO-10) task suite success rate",
-    "SimplerEnv_VM": (
-        "SimplerEnv Visual Matching overall success rate. If the paper only reports it "
-        "split by robot (Google Robot / WidowX), set confident=false"
-    ),
     "CALVIN_ACL": "CALVIN average length (Avg. Len., tasks completed in a row out of 5)",
 }
 
@@ -275,7 +271,6 @@ BENCHMARK_NAME = {
     "LIBERO_Object": "LIBERO",
     "LIBERO_Goal": "LIBERO",
     "LIBERO_Long": "LIBERO",
-    "SimplerEnv_VM": "SIMPLER",
     "CALVIN_ACL": "CALVIN",
 }
 NAME_LINES_BEFORE, NAME_LINES_AFTER = 30, 5
