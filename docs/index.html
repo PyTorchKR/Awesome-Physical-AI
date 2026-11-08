@@ -177,14 +177,11 @@
         <button type="button" @click="benchKey = k; buildBenchChart()" :aria-pressed="(benchKey === k).toString()"
                 :class="benchKey === k ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
                 class="text-xs px-2.5 py-1 rounded-full font-medium transition-colors">
-          <span x-text="benchLabel(k)"></span> <span class="opacity-70" x-text="benchCount(k) + (lang === 'ko' ? '개' : '')"></span>
+          <span x-text="benchLabel(k)"></span>
         </button>
       </template>
     </div>
-    <div class="flex justify-between gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
-      <span class="break-keep" x-text="benchMetaText()"></span>
-      <span class="tabular-nums whitespace-nowrap" x-text="lang === 'ko' ? models.length + '개 모델 중 ' + benchCount(benchKey) + '개' : benchCount(benchKey) + ' of ' + models.length + ' models'"></span>
-    </div>
+    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1 break-keep" x-text="benchMetaText()"></div>
     <div class="relative h-64 md:h-80">
       <canvas id="benchChart" role="img"></canvas>
       <div id="benchEmpty" class="hidden absolute inset-0 grid place-items-center rounded-lg border border-dashed border-gray-200 dark:border-gray-700 text-sm text-gray-500 dark:text-gray-400"
@@ -882,9 +879,7 @@ function app() {
     benchLabel(k) { return k === 'CALVIN_ACL' ? 'CALVIN' : k.replace(/_/g, ' '); },
     benchMetaText() {
       const m = (this.benchmarkMeta || {})[this.benchKey]; if (!m) return '';
-      const ko = this.lang === 'ko';
-      const unit = m.metric === 'avg_chain_length' ? (ko ? '연속 성공 과제 수 · 최대 5개' : 'Tasks done in a row · max 5') : (ko ? '성공률' : 'Success rate');
-      return this.benchLabel(this.benchKey) + (m.setting ? ' ' + m.setting : '') + ' · ' + unit;
+      return this.benchLabel(this.benchKey) + (m.setting ? ' ' + m.setting : '');
     },
     buildBenchChart() {
       if (typeof Chart === 'undefined') return;
@@ -913,7 +908,7 @@ function app() {
       const month = t => `${2000 + Math.floor(t / 12)}.${String(t % 12 + 1).padStart(2, '0')}`;
       const monthLong = t => ko ? `${2000 + Math.floor(t / 12)}년 ${t % 12 + 1}월` : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][t % 12] + ' ' + (2000 + Math.floor(t / 12));
 
-      // with 2+ points the y axis is cropped to the data (snapped to the tick step) and the caption says so
+      // with 2+ points the y axis is cropped to the data (snapped to the tick step)
       let yMin = s0, yMax = s1;
       if (pts.length >= 2) {
         const lo = Math.min(...pts.map(p => p.y)), hi = Math.max(...pts.map(p => p.y)), pad = Math.max((hi - lo) * 0.25, (s1 - s0) * 0.02);
@@ -921,7 +916,6 @@ function app() {
         yMax = Math.min(s1, +(Math.ceil((hi + pad) / step - 1e-9) * step).toFixed(2));
       }
       const notes = [];
-      if (yMin > s0) notes.push(ko ? `세로축이 ${tick(yMin)}부터 시작해서 차이가 실제보다 크게 보입니다` : `The axis starts at ${tick(yMin)}, so gaps look larger than they are`);
       if (noDate) notes.push(ko ? `arXiv 번호가 없는 ${noDate}개는 날짜를 알 수 없어 빠졌습니다` : `${noDate} without an arXiv id are left out (no date)`);
       capEl.textContent = notes.join(' · ');
 
@@ -978,8 +972,7 @@ function app() {
           scales: {
             x: { type: 'linear', min: xMin, max: xMax, grid: { color: C.grid }, border: { display: false },
                  afterBuildTicks: s => { const q = []; for (let v = Math.ceil(xMin / 3) * 3; v <= xMax; v += 3) q.push({ value: v }); s.ticks = q; },
-                 ticks: { color: C.muted, font: { size: 11 }, callback: v => month(v), maxRotation: 0 },
-                 title: { display: true, text: ko ? '논문이 나온 달' : 'Paper month', color: C.muted, font: { size: 11 } } },
+                 ticks: { color: C.muted, font: { size: 11 }, callback: v => month(v), maxRotation: 0 } },
             y: { min: yMin, max: yMax, grid: { color: C.grid }, border: { display: false },
                  ticks: { color: C.muted, font: { size: 11 }, stepSize: pts.length >= 2 ? step : (pct ? 0.2 : 1), callback: v => tick(v) } } } },
         plugins: [names],
