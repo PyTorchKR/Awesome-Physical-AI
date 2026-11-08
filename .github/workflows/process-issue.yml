@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install Gemini dependency for benchmark extraction
+        run: pip install -U google-genai
+
       - name: Determine entry type and action from label
         id: type
         run: |
@@ -62,6 +65,8 @@ jobs:
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HF_TOKEN:     ${{ secrets.HF_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BENCHMARK_REPORT_PATH: ${{ runner.temp }}/benchmark_report.md
         run: python scripts/process_issue.py
 
       # README.md and docs/ are not regenerated here: docs/index.html embeds the
@@ -104,6 +109,11 @@ jobs:
             -m "Co-authored-by: ${ISSUE_AUTHOR} <${ISSUE_AUTHOR_ID}+${ISSUE_AUTHOR}@users.noreply.github.com>"
           git push --force origin "$BRANCH"
           PR_BODY=$(printf 'Resolves #%s\n\nAuto-generated from issue by @%s.\n\n**Please review the entry before merging.**' "${ISSUE_NUMBER}" "${ISSUE_AUTHOR}")
+          # Benchmark scores extracted from the paper, with where each one came from
+          REPORT="${RUNNER_TEMP}/benchmark_report.md"
+          if [ -s "$REPORT" ]; then
+            PR_BODY="${PR_BODY}"$'\n\n'"$(cat "$REPORT")"
+          fi
           EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')
           if [ -z "$EXISTING_PR" ]; then
             gh pr create \
@@ -113,7 +123,9 @@ jobs:
               --base main \
               --label "$ENTRY_LABEL"
           else
-            echo "PR #${EXISTING_PR} already exists for this branch — skipping creation"
+            # The branch was just rebuilt from the edited issue, so refresh the body too
+            echo "PR #${EXISTING_PR} already exists for this branch — updating its body"
+            gh pr edit "$EXISTING_PR" --body "$PR_BODY"
           fi
 
       - name: Comment on issue

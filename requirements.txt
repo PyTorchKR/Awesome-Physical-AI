@@ -1,3 +1,4 @@
 PyYAML>=6.0
 requests>=2.31.0
+pypdf>=4.0  # benchmark extraction fallback when arXiv has no HTML version
 pytest>=8.0

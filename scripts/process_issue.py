@@ -15,6 +15,8 @@ Environment variables (set by the GitHub Actions workflow):
   ISSUE_TYPE        — "model", "dataset", or "tool"
   ISSUE_NUMBER      — GitHub issue number
   ISSUE_AUTHOR      — GitHub username of issue author
+  GEMINI_API_KEY    — enables benchmark score extraction for new models
+  BENCHMARK_REPORT_PATH — where to write the extraction report for the PR body
 """
 
 import os
@@ -25,6 +27,8 @@ from datetime import date
 
 import requests
 import yaml
+
+from extract_benchmarks import extract_for_model, render_report
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
@@ -158,6 +162,35 @@ def build_model_entry(form: dict) -> dict:
         "added_date": TODAY,
         "tags": parse_list(form.get("tags_optional", form.get("tags", ""))),
     }
+
+
+def attach_benchmarks(entry: dict) -> dict:
+    """Add scores from the model's own paper right after paper_url.
+
+    Extraction never blocks the entry: on any failure the entry is returned as is
+    and the reason goes into the report that the workflow appends to the PR body.
+    """
+    try:
+        result = extract_for_model(entry)
+        report = render_report([result])
+    except Exception as exc:
+        print(f"::warning::Benchmark extraction failed: {exc}")
+        return entry
+
+    report_path = os.environ.get("BENCHMARK_REPORT_PATH", "")
+    if report_path:
+        Path(report_path).write_text(report, encoding="utf-8")
+    if result.error:
+        print(f"::warning::Benchmark extraction skipped: {result.error}")
+    if not result.accepted:
+        return entry
+
+    ordered = {}
+    for key, value in entry.items():
+        ordered[key] = value
+        if key == "paper_url":
+            ordered["benchmarks"] = result.scores
+    return ordered
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -500,6 +533,9 @@ def main() -> None:
         field_list = ", ".join(broken)
         print(f"::error::The following URLs returned 404: {field_list}. Please fix the links and edit the issue to retry.")
         sys.exit(1)
+
+    if issue_type == "model":
+        entry = attach_benchmarks(entry)
 
     append_entry(yaml_path, entry)
     print(f"Entry '{entry['name']}' added by @{author} (issue #{issue_number})")
