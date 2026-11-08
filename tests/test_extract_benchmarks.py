@@ -101,6 +101,24 @@ def test_classify_moves_doubtful_scores_to_uncertain(overrides, reason):
     assert reason in uncertain[0].reason
 
 
+def test_classify_rejects_number_from_another_benchmarks_table():
+    # Seen with RoboVLMs: SimplerEnv WidowX per-task rates filed under LIBERO
+    paper = "Extended Table 3: SimplerEnv WidowX+Bridge.\n| RoboVLMs (Ours) | 0.458 | 0.417\n"
+    raw = [_score(benchmark="LIBERO_Spatial", reported_value="0.458", setting="WidowX+Bridge")]
+
+    accepted, uncertain = eb.classify(raw, paper)
+
+    assert accepted == []
+    assert "LIBERO 표기가 없음" in uncertain[0].reason
+
+
+def test_near_benchmark_name_looks_only_around_the_row():
+    far = "CALVIN results.\n" + "filler\n" * 40 + "| Ours | 4.21\n"
+
+    assert eb.near_benchmark_name(PAPER, "4.21", "CALVIN_ACL")
+    assert not eb.near_benchmark_name(far, "4.21", "CALVIN_ACL")
+
+
 def test_classify_rejects_value_outside_scale():
     # 88.4 → 0.884 is fine for LIBERO, but CALVIN keeps raw values and 88.4 > 5
     accepted, uncertain = eb.classify([_score(reported_value="88.4")], PAPER)

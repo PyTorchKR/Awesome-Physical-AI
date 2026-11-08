@@ -3,9 +3,10 @@
 extract_benchmarks.py — Extract a model's benchmark scores from its own paper.
 
 Only the paper in the model's `paper_url` is read. A score proposed by the LLM is
-kept only when the same number appears verbatim in the paper text, the row is the
-model's own result, and the evaluation setting matches BENCHMARK_META. Everything
-else is reported as uncertain so a reviewer can decide.
+kept only when the same number appears verbatim in the paper text with the
+benchmark's name close by, the row is the model's own result, and the evaluation
+setting matches BENCHMARK_META. Everything else is reported as uncertain so a
+reviewer can decide.
 
 Used by process_issue.py for new models, and directly for a one-off backfill:
   python scripts/extract_benchmarks.py --missing              # models without 'benchmarks'
@@ -268,6 +269,34 @@ def appears_in(text: str, reported: str) -> bool:
     return re.search(rf"(?<![\d.]){re.escape(number)}(?!\d)", text) is not None
 
 
+# Name that has to be printed near the number (table header/caption) for it to count
+BENCHMARK_NAME = {
+    "LIBERO_Spatial": "LIBERO",
+    "LIBERO_Object": "LIBERO",
+    "LIBERO_Goal": "LIBERO",
+    "LIBERO_Long": "LIBERO",
+    "SimplerEnv_VM": "SIMPLER",
+    "CALVIN_ACL": "CALVIN",
+}
+NAME_LINES_BEFORE, NAME_LINES_AFTER = 30, 5
+
+
+def near_benchmark_name(text: str, reported: str, benchmark: str) -> bool:
+    """True when some line printing the number has the benchmark's name close by.
+
+    Catches a real number from another benchmark's table being filed under the
+    wrong key (e.g. SimplerEnv WidowX results reported as LIBERO).
+    """
+    name = BENCHMARK_NAME.get(benchmark, benchmark).upper()
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if appears_in(line, reported):
+            window = "\n".join(lines[max(0, i - NAME_LINES_BEFORE): i + NAME_LINES_AFTER + 1])
+            if name in window.upper():
+                return True
+    return False
+
+
 def normalize_setting(setting: str) -> str:
     """'ABCD (Lang) → D', 'ABCD->D' and 'ABCD→D' all become 'ABCD→D'."""
     return "→".join(re.findall(r"\b[ABCD]+\b", (setting or "").upper()))
@@ -281,6 +310,8 @@ def _reject_reason(f: Finding, item: dict[str, Any], text: str) -> str:
         return "숫자로 읽을 수 없음"
     if not appears_in(text, f.reported_value):
         return "논문 본문에서 같은 숫자를 찾지 못함"
+    if not near_benchmark_name(text, f.reported_value, f.benchmark):
+        return f"숫자 근처에 {BENCHMARK_NAME.get(f.benchmark, f.benchmark)} 표기가 없음"
     lo, hi = meta["scale"]
     if not lo <= f.value <= hi:
         return f"허용 범위 {meta['scale']} 밖"
