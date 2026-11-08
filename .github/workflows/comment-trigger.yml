@@ -26,3 +26,80 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh workflow run test.yml --ref "${{ steps.pr.outputs.branch }}" --repo ${{ github.repository }}
+
+  # Re-run benchmark score extraction on a PR, e.g. after the LLM quota ran out.
+  # Only models touched by the PR are processed, existing scores are kept, and the
+  # branch gets one extra commit instead of being rebuilt from the issue.
+  rerun-benchmarks:
+    if: |
+      github.event.issue.pull_request != null &&
+      github.event.comment.body == '/benchmarks' &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: rerun-benchmarks-${{ github.event.issue.number }}
+    env:
+      PR_NUMBER: ${{ github.event.issue.number }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Get PR branch
+        id: pr
+        run: |
+          read -r BRANCH BASE CROSS <<< "$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+            --json headRefName,baseRefName,isCrossRepository --jq '"\(.headRefName) \(.baseRefName) \(.isCrossRepository)"')"
+          if [ "$CROSS" = "true" ]; then
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --body "/benchmarks는 이 레포 브랜치에서 온 PR에서만 실행할 수 있습니다. 포크 PR에는 쓰기 권한이 없습니다."
+            exit 1
+          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.branch }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -U google-genai
+
+      - name: Extract scores for models changed in this PR
+        env:
+          BASE: ${{ steps.pr.outputs.base }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          REPORT="$RUNNER_TEMP/benchmark_report.md"
+          IDS="$(python scripts/changed_entry_ids.py --base "$(git merge-base "origin/$BASE" HEAD)" --head HEAD)"
+          if [ -z "$IDS" ]; then
+            echo "이 PR에서 바뀐 항목이 없어 추출하지 않았습니다." > "$REPORT"
+            exit 0
+          fi
+          ARGS=()
+          IFS=',' read -ra ID_LIST <<< "$IDS"
+          for id in "${ID_LIST[@]}"; do ARGS+=(--id "$id"); done
+          python scripts/extract_benchmarks.py "${ARGS[@]}" --report "$REPORT"
+          python scripts/validate_data.py
+
+      - name: Commit new scores and post the report
+        env:
+          BRANCH: ${{ steps.pr.outputs.branch }}
+        run: |
+          if ! git diff --quiet -- data/models.yaml; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/models.yaml
+            git commit -m "data: add benchmark scores via /benchmarks"
+            git push origin "HEAD:$BRANCH"
+          fi
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/benchmark_report.md"

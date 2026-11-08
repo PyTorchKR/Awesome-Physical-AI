@@ -119,6 +119,8 @@ python scripts/sync_edit_templates.py  # 수정 폼 드롭다운 갱신
 | **Validate Data** | YAML 스키마 검증 | `validate-pr.yml` |
 
 CI가 실패하면 리뷰 요청을 할 수 없습니다.  
+
+메인테이너는 모델 추가 PR에 `/benchmarks` 댓글을 달아 벤치마크 점수 추출을 다시 실행할 수 있습니다. API 사용량 초과 등으로 추출이 건너뛰어졌을 때 씁니다. 이 PR에서 바뀐 모델만 처리하고, 기존 점수는 그대로 둔 채 새 점수만 커밋으로 추가합니다.
 ---
 
 ### 분류 체계 (Taxonomy)
@@ -269,6 +271,8 @@ All PRs must pass the following CI checks before merging.
 | **Validate Data** | YAML schema validation | `validate-pr.yml` |
 
 If CI fails, you cannot request a review from maintainers.  
+
+Maintainers can comment `/benchmarks` on a model PR to re-run benchmark score extraction, e.g. when it was skipped because the API quota ran out. Only models changed in that PR are processed; existing scores are kept and new ones are added as a commit.
 
 ---
 
