@@ -616,3 +616,39 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: scandreamer
+  name: ScanDreamer
+  org: NTU Singapore
+  year: 2026
+  description_en: ScanDreamer is a map-grounded world model designed for quadrotor
+    navigation in unknown cluttered environments using a forward-facing depth camera.
+    It constructs an online 2D scan-memory map from depth images and vehicle pose
+    to condition the world model, actor, and critic, while deriving explicit progress
+    and wall-contact signals.
+  description_ko: ScanDreamer는 전방향 심도 카메라를 사용하여 미지의 장애물 환경에서 쿼드로터의 내비게이션을 수행하는 맵 기반
+    월드 모델입니다. 심도 이미지와 차량 포즈로부터 온라인 2D 스캔 메모리 맵을 구축하여 월드 모델, 액터, 크리틱의 조건으로 활용하며 명시적인
+    진행 상황 및 벽면 접촉 신호를 유도합니다.
+  github_url: https://github.com/WANGSHUAIzzzz/ScanDreamer
+  paper_url: https://arxiv.org/abs/2611.11605
+  hf_url: ''
+  project_url: ''
+  categories:
+  - navigation
+  hardware:
+  - drone
+  learning:
+  - RL
+  - world_model
+  framework:
+  - isaacgym
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-15'
+  added_date: '2026-11-15'
+  tags:
+  - scan-memory-map
+  - geodesic-progress
+  - depth-camera
