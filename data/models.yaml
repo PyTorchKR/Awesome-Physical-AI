@@ -616,3 +616,45 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: ns-vla
+  name: NS-VLA
+  org: NTU Singapore
+  year: 2026
+  description_en: NS-VLA is a neuro-symbolic vision-language-action model designed
+    for robotic manipulation on long-horizon tasks. It incorporates a Neuro-Symbolic
+    Encoder with a gated monotone stage pointer and a Neuro-Symbolic Solver to condition
+    chunked VLA policies on sub-instructions, refined via hierarchical joint policy
+    optimization.
+  description_ko: NS-VLA는 장기 호라이즌 로봇 조작 작업을 위한 신경 기호학적 Vision-Language-Action 모델입니다.
+    게이트 단조 단계 포인터가 있는 Neuro-Symbolic Encoder와 하부 지시에 따라 청크된 VLA 정책을 조건화하는 Neuro-Symbolic
+    Solver를 도입하며, 계층적 공동 정책 최적화를 통해 개선됩니다.
+  github_url: https://github.com/Zuzuzzy/NS-VLA
+  paper_url: https://arxiv.org/abs/2603.09542
+  benchmarks:
+    LIBERO_Spatial: 0.96
+    LIBERO_Object: 0.87
+    LIBERO_Goal: 0.81
+    LIBERO_Long: 0.42
+  hf_url: ''
+  project_url: ''
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  - RL
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-15'
+  added_date: '2026-11-15'
+  tags:
+  - neuro-symbolic
+  - action-chunking
+  - hierarchical-policy
+  - vision-language-action
