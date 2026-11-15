@@ -616,3 +616,42 @@
   - bimanual-manipulation
   - diffusion
   - foundation-model
+- id: actionunet
+  name: ActionUNet
+  org: Di-Zhu123
+  year: 2026
+  description_en: ActionUNet introduces an efficient multi-scale fine-tuning framework
+    that enhances Vision-Language-Action models for robotic manipulation. By constructing
+    a lightweight temporal U-Net and employing a conditional SIREN continuous action
+    decoder with second-order smoothness constraints, it bridges the scale gap between
+    coarse semantics and fine temporal execution while suppressing mechanical oscillations.
+  description_ko: ActionUNet은 로봇 조작을 위한 Vision-Language-Action 모델을 향상시키는 효율적인 다중 스케일
+    파인튜닝 프레임워크를 제안합니다. 가벼운 temporal U-Net과 2차 평활성 제약 조건이 있는 조건부 SIREN continuous action
+    decoder를 채택하여 거친 의미론과 미세한 시간적 실행 간의 스케일 격차를 해소하고 기계적 진동을 억제합니다.
+  github_url: https://github.com/Di-Zhu123/ActionUNet
+  paper_url: https://arxiv.org/abs/2609.34982
+  benchmarks:
+    LIBERO_Spatial: 0.986
+  hf_url: ''
+  project_url: ''
+  categories:
+  - manipulation
+  hardware:
+  - manipulator
+  learning:
+  - VLA
+  - few-shot
+  framework:
+  - pytorch
+  communication: []
+  stats:
+    github_stars: 0
+    github_forks: 0
+    hf_downloads: 0
+    last_updated: '2026-11-15'
+  added_date: '2026-11-15'
+  tags:
+  - multi-scale-fusion
+  - continuous-action-decoder
+  - temporal-unet
+  - vision-language-action
